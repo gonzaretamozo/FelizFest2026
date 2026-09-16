@@ -1,0 +1,925 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FELIFEST</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+}
+
+header {
+    text-align: center;
+    padding: 25px 15px;
+    background: #000;
+}
+
+header img {
+    max-width: 180px;
+    max-height: 100px;
+    object-fit: contain;
+}
+
+h1 {
+    margin: 12px 0 5px;
+}
+
+header p {
+    color: #aaa;
+}
+
+.menu {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: #181818;
+}
+
+button {
+    border: 0;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: .85;
+}
+
+.primary {
+    background: white;
+    color: black;
+}
+
+.camera {
+    max-width: 700px;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+}
+
+video,
+#preview {
+    width: 100%;
+    max-width: 600px;
+    border-radius: 18px;
+    margin-top: 15px;
+}
+
+#preview {
+    display: none;
+}
+
+.camera-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.gallery {
+    max-width: 1100px;
+    margin: auto;
+    padding: 25px;
+}
+
+.gallery h2 {
+    text-align: center;
+}
+
+.photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.photo-card {
+    background: #1c1c1c;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+.photo-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.photo-card button {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.status {
+    text-align: center;
+    padding: 15px;
+    color: #aaa;
+}
+
+.empty {
+    text-align: center;
+    color: #777;
+    padding: 40px;
+}
+
+#canvas {
+    display: none;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.9);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-box {
+    background: white;
+    color: black;
+    padding: 25px;
+    border-radius: 18px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.modal-box img {
+    max-width: 100%;
+    margin: 15px 0;
+}
+
+@media(max-width:600px) {
+    button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <!--
+    Poné tu logo como "logo.png"
+    en la misma carpeta que index.html
+    -->
+
+    <img src="logo.png"
+         alt="Logo"
+         onerror="this.style.display='none'">
+
+    <h1>📸 FOTOS DEL EVENTO</h1>
+
+    <p>Compartí y descargá tus fotos</p>
+
+</header>
+
+<div class="menu">
+
+    <button class="primary"
+            onclick="abrirCamara()">
+        📷 SACAR UNA FOTO
+    </button>
+
+    <button onclick="mostrarGaleria()">
+        🖼️ VER FOTOS
+    </button>
+
+</div>
+
+
+<section class="camera" id="cameraSection">
+
+    <video id="video"
+           autoplay
+           playsinline
+           style="display:none">
+    </video>
+
+    <canvas id="canvas"></canvas>
+
+    <img id="preview">
+
+    <div class="camera-buttons">
+
+        <button id="activarBtn"
+                class="primary"
+                onclick="iniciarCamara()">
+            📷 ACTIVAR CÁMARA
+        </button>
+
+        <button id="fotoBtn"
+                class="primary"
+                onclick="sacarFoto()"
+                style="display:none">
+            📸 SACAR FOTO
+        </button>
+
+        <button id="guardarBtn"
+                class="primary"
+                onclick="subirFoto()"
+                style="display:none">
+            ☁️ GUARDAR EN GOOGLE DRIVE
+        </button>
+
+        <button id="otraBtn"
+                onclick="nuevaFoto()"
+                style="display:none">
+            🔄 OTRA FOTO
+        </button>
+
+    </div>
+
+    <div id="status" class="status"></div>
+
+</section>
+
+
+<section class="gallery"
+         id="gallery">
+
+    <h2>🖼️ GALERÍA</h2>
+
+    <div id="photos"
+         class="photos">
+
+        <div class="empty">
+            Cargando fotos...
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- MODAL QR -->
+
+<div id="qrModal"
+     class="modal">
+
+    <div class="modal-box">
+
+        <h2>🔳 Código QR</h2>
+
+        <p>
+            Escaneá este código para abrir
+            la foto.
+        </p>
+
+        <img id="qr">
+
+        <button onclick="cerrarQR()">
+            CERRAR
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/*
+====================================================
+IMPORTANTE
+====================================================
+
+PEGÁ ACÁ LA URL DE TU GOOGLE APPS SCRIPT.
+
+Ejemplo:
+
+const SCRIPT_URL =
+"https://script.google.com/macros/s/XXXXX/exec";
+
+====================================================
+*/
+
+const SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbyOKKJUMrNJvU9l4tRIPuaeF4H8k8-czm74NpXlyc9rpSV0T1BqgwRAdcAufHAey0GZSA/exec";
+
+
+let stream = null;
+let fotoBase64 = null;
+
+
+/* ==========================================
+   CÁMARA
+========================================== */
+
+function abrirCamara() {
+
+    document.getElementById("cameraSection")
+        .scrollIntoView({
+            behavior: "smooth"
+        });
+
+    iniciarCamara();
+}
+
+
+async function iniciarCamara() {
+
+    try {
+
+        stream =
+            await navigator.mediaDevices
+            .getUserMedia({
+
+                video: {
+                    facingMode: {
+                        ideal: "environment"
+                    }
+                },
+
+                audio: false
+
+            });
+
+
+        const video =
+            document.getElementById("video");
+
+        video.srcObject = stream;
+
+        video.style.display = "block";
+
+
+        document.getElementById(
+            "activarBtn"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "fotoBtn"
+        ).style.display = "block";
+
+
+        document.getElementById(
+            "preview"
+        ).style.display = "none";
+
+    }
+
+    catch(error) {
+
+        alert(
+            "No se pudo abrir la cámara.\n\n" +
+            "Permití el acceso a la cámara " +
+            "cuando el navegador lo solicite."
+        );
+
+        console.error(error);
+    }
+}
+
+
+/* ==========================================
+   SACAR FOTO
+========================================== */
+
+function sacarFoto() {
+
+    const video =
+        document.getElementById("video");
+
+    const canvas =
+        document.getElementById("canvas");
+
+    const width =
+        video.videoWidth;
+
+    const height =
+        video.videoHeight;
+
+
+    canvas.width = width;
+    canvas.height = height;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    /*
+    FOTO ORIGINAL
+    */
+
+    ctx.drawImage(
+        video,
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    /*
+    AGREGAR LOGO
+    */
+
+    const logo =
+        new Image();
+
+
+    logo.onload = function() {
+
+        const logoWidth =
+            width * 0.25;
+
+        const logoHeight =
+            logo.height *
+            (logoWidth / logo.width);
+
+        const margen =
+            width * 0.03;
+
+
+        ctx.drawImage(
+
+            logo,
+
+            width -
+            logoWidth -
+            margen,
+
+            height -
+            logoHeight -
+            margen,
+
+            logoWidth,
+
+            logoHeight
+
+        );
+
+
+        terminarFoto();
+
+    };
+
+
+    logo.onerror = function() {
+
+        terminarFoto();
+
+    };
+
+
+    logo.src = "logo.png";
+
+}
+
+
+/* ==========================================
+   TERMINAR FOTO
+========================================== */
+
+function terminarFoto() {
+
+    const canvas =
+        document.getElementById("canvas");
+
+
+    fotoBase64 =
+        canvas.toDataURL(
+            "image/jpeg",
+            0.90
+        );
+
+
+    document.getElementById(
+        "preview"
+    ).src = fotoBase64;
+
+
+    document.getElementById(
+        "preview"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "video"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "fotoBtn"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "guardarBtn"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "otraBtn"
+    ).style.display = "block";
+
+
+    if(stream) {
+
+        stream.getTracks()
+            .forEach(
+                track => track.stop()
+            );
+
+        stream = null;
+    }
+}
+
+
+/* ==========================================
+   SUBIR A GOOGLE DRIVE
+========================================== */
+
+async function subirFoto() {
+
+    if(!fotoBase64) {
+
+        alert(
+            "Primero sacá una foto."
+        );
+
+        return;
+    }
+
+
+    if(
+        SCRIPT_URL ===
+        "PEGAR_AQUI_LA_URL_DE_APPS_SCRIPT"
+    ) {
+
+        alert(
+            "Todavía no configuraste " +
+            "la URL de Google Apps Script."
+        );
+
+        return;
+    }
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    status.innerText =
+        "☁️ Subiendo foto a Google Drive...";
+
+
+    document.getElementById(
+        "guardarBtn"
+    ).disabled = true;
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                SCRIPT_URL,
+                {
+
+                    method: "POST",
+
+                    body: JSON.stringify({
+
+                        image: fotoBase64
+
+                    })
+
+                }
+            );
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if(resultado.success) {
+
+            status.innerText =
+                "✅ ¡Foto guardada en Google Drive!";
+
+
+            fotoBase64 = null;
+
+
+            document.getElementById(
+                "guardarBtn"
+            ).style.display = "none";
+
+
+            cargarGaleria();
+
+        }
+
+        else {
+
+            throw new Error(
+                resultado.error ||
+                "Error desconocido"
+            );
+
+        }
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        status.innerText =
+            "❌ No se pudo guardar la foto.";
+
+
+        alert(
+            "Hubo un problema al subir " +
+            "la foto a Google Drive."
+        );
+
+    }
+
+
+    document.getElementById(
+        "guardarBtn"
+    ).disabled = false;
+}
+
+
+/* ==========================================
+   OTRA FOTO
+========================================== */
+
+function nuevaFoto() {
+
+    fotoBase64 = null;
+
+    document.getElementById(
+        "preview"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "guardarBtn"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "otraBtn"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "activarBtn"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "status"
+    ).innerText = "";
+}
+
+
+/* ==========================================
+   GALERÍA
+========================================== */
+
+async function cargarGaleria() {
+
+    if(
+        SCRIPT_URL ===
+        "PEGAR_AQUI_LA_URL_DE_APPS_SCRIPT"
+    ) {
+
+        document.getElementById(
+            "photos"
+        ).innerHTML =
+            '<div class="empty">' +
+            'Configurá primero Google Apps Script.' +
+            '</div>';
+
+        return;
+    }
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                SCRIPT_URL
+            );
+
+
+        const fotos =
+            await respuesta.json();
+
+
+        const container =
+            document.getElementById(
+                "photos"
+            );
+
+
+        container.innerHTML = "";
+
+
+        if(
+            !fotos ||
+            fotos.length === 0
+        ) {
+
+            container.innerHTML =
+                '<div class="empty">' +
+                'Todavía no hay fotos.' +
+                '</div>';
+
+            return;
+        }
+
+
+        fotos.forEach(
+            function(foto) {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+                card.className =
+                    "photo-card";
+
+
+                const img =
+                    document.createElement(
+                        "img"
+                    );
+
+                img.src =
+                    foto.url;
+
+
+                const descargar =
+                    document.createElement(
+                        "button"
+                    );
+
+                descargar.innerText =
+                    "⬇️ Descargar";
+
+
+                descargar.onclick =
+                    function() {
+
+                        window.open(
+                            foto.url,
+                            "_blank"
+                        );
+
+                    };
+
+
+                const qr =
+                    document.createElement(
+                        "button"
+                    );
+
+                qr.innerText =
+                    "🔳 Mostrar QR";
+
+
+                qr.onclick =
+                    function() {
+
+                        mostrarQR(
+                            foto.url
+                        );
+
+                    };
+
+
+                card.appendChild(img);
+
+                card.appendChild(
+                    descargar
+                );
+
+                card.appendChild(qr);
+
+                container.appendChild(
+                    card
+                );
+
+            }
+        );
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        document.getElementById(
+            "photos"
+        ).innerHTML =
+            '<div class="empty">' +
+            'No se pudieron cargar las fotos.' +
+            '</div>';
+
+    }
+}
+
+
+/* ==========================================
+   GALERÍA SCROLL
+========================================== */
+
+function mostrarGaleria() {
+
+    document.getElementById(
+        "gallery"
+    ).scrollIntoView({
+        behavior: "smooth"
+    });
+
+    cargarGaleria();
+}
+
+
+/* ==========================================
+   QR
+========================================== */
+
+function mostrarQR(url) {
+
+    const qrURL =
+        "https://api.qrserver.com/v1/create-qr-code/" +
+        "?size=400x400&data=" +
+        encodeURIComponent(url);
+
+
+    document.getElementById(
+        "qr"
+    ).src = qrURL;
+
+
+    document.getElementById(
+        "qrModal"
+    ).style.display = "flex";
+}
+
+
+function cerrarQR() {
+
+    document.getElementById(
+        "qrModal"
+    ).style.display = "none";
+}
+
+
+/* ==========================================
+   INICIO
+========================================== */
+
+window.onload =
+    function() {
+
+        cargarGaleria();
+
+        /*
+        Actualizar galería cada 15 segundos
+        */
+
+        setInterval(
+            cargarGaleria,
+            15000
+        );
+
+    };
+
+</script>
+
+</body>
+</html>
+```
