@@ -555,17 +555,15 @@ function terminarFoto() {
 
 async function subirFoto() {
 
-    if(!fotoBase64) {
+    if (!fotoBase64) {
 
-        alert(
-            "Primero sacá una foto."
-        );
+        alert("Primero sacá una foto.");
 
         return;
     }
 
 
-    if(
+    if (
         SCRIPT_URL ===
         "PEGAR_AQUI_LA_URL_DE_APPS_SCRIPT"
     ) {
@@ -580,9 +578,7 @@ async function subirFoto() {
 
 
     const status =
-        document.getElementById(
-            "status"
-        );
+        document.getElementById("status");
 
 
     status.innerText =
@@ -596,67 +592,61 @@ async function subirFoto() {
 
     try {
 
-        const respuesta =
-            await fetch(
-                SCRIPT_URL,
-                {
+        /*
+        Enviamos la foto sin intentar
+        leer la respuesta del servidor.
 
-                    method: "POST",
+        Esto evita el problema de
+        comunicación entre GitHub Pages
+        y Apps Script.
+        */
 
-                    body: JSON.stringify({
+        await fetch(
+            SCRIPT_URL,
+            {
+                method: "POST",
 
-                        image: fotoBase64
+                mode: "no-cors",
 
-                    })
-
-                }
-            );
-
-
-        const resultado =
-            await respuesta.json();
-
-
-        if(resultado.success) {
-
-            status.innerText =
-                "✅ ¡Foto guardada en Google Drive!";
+                body: JSON.stringify({
+                    image: fotoBase64
+                })
+            }
+        );
 
 
-            fotoBase64 = null;
+        status.innerText =
+            "✅ ¡Foto enviada a Google Drive!";
 
 
-            document.getElementById(
-                "guardarBtn"
-            ).style.display = "none";
+        document.getElementById(
+            "guardarBtn"
+        ).style.display = "none";
 
 
-            cargarGaleria();
+        fotoBase64 = null;
 
-        }
 
-        else {
+        /*
+        Esperamos un poco y actualizamos
+        la galería.
+        */
 
-            throw new Error(
-                resultado.error ||
-                "Error desconocido"
-            );
+        setTimeout(
+            cargarGaleria,
+            2500
+        );
 
-        }
 
-    }
-
-    catch(error) {
+    } catch (error) {
 
         console.error(error);
 
         status.innerText =
             "❌ No se pudo guardar la foto.";
 
-
         alert(
-            "Hubo un problema al subir " +
-            "la foto a Google Drive."
+            "No se pudo enviar la foto."
         );
 
     }
@@ -665,50 +655,9 @@ async function subirFoto() {
     document.getElementById(
         "guardarBtn"
     ).disabled = false;
-}
+}function cargarGaleria() {
 
-
-/* ==========================================
-   OTRA FOTO
-========================================== */
-
-function nuevaFoto() {
-
-    fotoBase64 = null;
-
-    document.getElementById(
-        "preview"
-    ).style.display = "none";
-
-
-    document.getElementById(
-        "guardarBtn"
-    ).style.display = "none";
-
-
-    document.getElementById(
-        "otraBtn"
-    ).style.display = "none";
-
-
-    document.getElementById(
-        "activarBtn"
-    ).style.display = "block";
-
-
-    document.getElementById(
-        "status"
-    ).innerText = "";
-}
-
-
-/* ==========================================
-   GALERÍA
-========================================== */
-
-async function cargarGaleria() {
-
-    if(
+    if (
         SCRIPT_URL ===
         "PEGAR_AQUI_LA_URL_DE_APPS_SCRIPT"
     ) {
@@ -717,209 +666,155 @@ async function cargarGaleria() {
             "photos"
         ).innerHTML =
             '<div class="empty">' +
-            'Configurá primero Google Apps Script.' +
+            'Configurá Google Apps Script.' +
             '</div>';
 
         return;
     }
 
 
-    try {
+    const callbackName =
+        "mostrarFotos_" +
+        Date.now();
 
-        const respuesta =
-            await fetch(
-                SCRIPT_URL
+
+    window[callbackName] =
+        function(fotos) {
+
+            const container =
+                document.getElementById(
+                    "photos"
+                );
+
+
+            container.innerHTML = "";
+
+
+            if (
+                !fotos ||
+                fotos.length === 0
+            ) {
+
+                container.innerHTML =
+                    '<div class="empty">' +
+                    'Todavía no hay fotos.' +
+                    '</div>';
+
+                delete window[callbackName];
+
+                return;
+            }
+
+
+            fotos.forEach(
+                function(foto) {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+                    card.className =
+                        "photo-card";
+
+
+                    const img =
+                        document.createElement(
+                            "img"
+                        );
+
+                    img.src =
+                        foto.url;
+
+
+                    const descargar =
+                        document.createElement(
+                            "button"
+                        );
+
+                    descargar.innerText =
+                        "⬇️ Descargar";
+
+
+                    descargar.onclick =
+                        function() {
+
+                            window.open(
+                                foto.url,
+                                "_blank"
+                            );
+
+                        };
+
+
+                    const qr =
+                        document.createElement(
+                            "button"
+                        );
+
+                    qr.innerText =
+                        "🔳 Mostrar QR";
+
+
+                    qr.onclick =
+                        function() {
+
+                            mostrarQR(
+                                foto.url
+                            );
+
+                        };
+
+
+                    card.appendChild(img);
+
+                    card.appendChild(
+                        descargar
+                    );
+
+                    card.appendChild(qr);
+
+                    container.appendChild(
+                        card
+                    );
+
+                }
             );
 
 
-        const fotos =
-            await respuesta.json();
+            delete window[callbackName];
+        };
 
 
-        const container =
+    const script =
+        document.createElement(
+            "script"
+        );
+
+
+    script.src =
+        SCRIPT_URL +
+        "?callback=" +
+        callbackName;
+
+
+    script.onerror =
+        function() {
+
             document.getElementById(
                 "photos"
-            );
-
-
-        container.innerHTML = "";
-
-
-        if(
-            !fotos ||
-            fotos.length === 0
-        ) {
-
-            container.innerHTML =
+            ).innerHTML =
                 '<div class="empty">' +
-                'Todavía no hay fotos.' +
+                'No se pudieron cargar las fotos.' +
                 '</div>';
 
-            return;
-        }
+            delete window[callbackName];
+
+        };
 
 
-        fotos.forEach(
-            function(foto) {
+    document.body.appendChild(
+        script
+    );
 
-                const card =
-                    document.createElement(
-                        "div"
-                    );
-
-                card.className =
-                    "photo-card";
-
-
-                const img =
-                    document.createElement(
-                        "img"
-                    );
-
-                img.src =
-                    foto.url;
-
-
-                const descargar =
-                    document.createElement(
-                        "button"
-                    );
-
-                descargar.innerText =
-                    "⬇️ Descargar";
-
-
-                descargar.onclick =
-                    function() {
-
-                        window.open(
-                            foto.url,
-                            "_blank"
-                        );
-
-                    };
-
-
-                const qr =
-                    document.createElement(
-                        "button"
-                    );
-
-                qr.innerText =
-                    "🔳 Mostrar QR";
-
-
-                qr.onclick =
-                    function() {
-
-                        mostrarQR(
-                            foto.url
-                        );
-
-                    };
-
-
-                card.appendChild(img);
-
-                card.appendChild(
-                    descargar
-                );
-
-                card.appendChild(qr);
-
-                container.appendChild(
-                    card
-                );
-
-            }
-        );
-
-    }
-
-    catch(error) {
-
-        console.error(error);
-
-        document.getElementById(
-            "photos"
-        ).innerHTML =
-            '<div class="empty">' +
-            'No se pudieron cargar las fotos.' +
-            '</div>';
-
-    }
 }
-
-
-/* ==========================================
-   GALERÍA SCROLL
-========================================== */
-
-function mostrarGaleria() {
-
-    document.getElementById(
-        "gallery"
-    ).scrollIntoView({
-        behavior: "smooth"
-    });
-
-    cargarGaleria();
-}
-
-
-/* ==========================================
-   QR
-========================================== */
-
-function mostrarQR(url) {
-
-    const qrURL =
-        "https://api.qrserver.com/v1/create-qr-code/" +
-        "?size=400x400&data=" +
-        encodeURIComponent(url);
-
-
-    document.getElementById(
-        "qr"
-    ).src = qrURL;
-
-
-    document.getElementById(
-        "qrModal"
-    ).style.display = "flex";
-}
-
-
-function cerrarQR() {
-
-    document.getElementById(
-        "qrModal"
-    ).style.display = "none";
-}
-
-
-/* ==========================================
-   INICIO
-========================================== */
-
-window.onload =
-    function() {
-
-        cargarGaleria();
-
-        /*
-        Actualizar galería cada 15 segundos
-        */
-
-        setInterval(
-            cargarGaleria,
-            15000
-        );
-
-    };
-
-</script>
-
-</body>
-</html>
-```
