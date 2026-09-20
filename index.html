@@ -1,820 +1,1416 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>FELIFEST</title>
+  <title>Fotos del Evento</title>
 
-<style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #111;
-    color: white;
-}
-
-header {
-    text-align: center;
-    padding: 25px 15px;
-    background: #000;
-}
-
-header img {
-    max-width: 180px;
-    max-height: 100px;
-    object-fit: contain;
-}
-
-h1 {
-    margin: 12px 0 5px;
-}
-
-header p {
-    color: #aaa;
-}
-
-.menu {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 20px;
-    background: #181818;
-}
-
-button {
-    border: 0;
-    border-radius: 12px;
-    padding: 14px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    opacity: .85;
-}
-
-.primary {
-    background: white;
-    color: black;
-}
-
-.camera {
-    max-width: 700px;
-    margin: auto;
-    padding: 20px;
-    text-align: center;
-}
-
-video,
-#preview {
-    width: 100%;
-    max-width: 600px;
-    border-radius: 18px;
-    margin-top: 15px;
-}
-
-#preview {
-    display: none;
-}
-
-.camera-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 15px;
-}
-
-.gallery {
-    max-width: 1100px;
-    margin: auto;
-    padding: 25px;
-}
-
-.gallery h2 {
-    text-align: center;
-}
-
-.photos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 18px;
-}
-
-.photo-card {
-    background: #1c1c1c;
-    border-radius: 15px;
-    padding: 10px;
-}
-
-.photo-card img {
-    width: 100%;
-    border-radius: 10px;
-}
-
-.photo-card button {
-    width: 100%;
-    margin-top: 8px;
-}
-
-.status {
-    text-align: center;
-    padding: 15px;
-    color: #aaa;
-}
-
-.empty {
-    text-align: center;
-    color: #777;
-    padding: 40px;
-}
-
-#canvas {
-    display: none;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.9);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal-box {
-    background: white;
-    color: black;
-    padding: 25px;
-    border-radius: 18px;
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-}
-
-.modal-box img {
-    max-width: 100%;
-    margin: 15px 0;
-}
-
-@media(max-width:600px) {
-    button {
-        width: 100%;
+  <style>
+    * {
+      box-sizing: border-box;
     }
-}
-</style>
+
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, Helvetica, sans-serif;
+      text-align: center;
+    }
+
+    header {
+      background: #000;
+      padding: 20px 15px 25px;
+    }
+
+    header img {
+      max-width: 180px;
+      max-height: 120px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 15px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .subtitulo {
+      color: #aaa;
+      margin-top: 12px;
+      font-size: 16px;
+    }
+
+    .botones {
+      background: #1c1c1c;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 15px 22px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      background: white;
+      color: #111;
+      transition: transform 0.15s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .contenedor {
+      max-width: 1000px;
+      margin: auto;
+      padding: 30px 15px;
+    }
+
+    #zonaCamara {
+      display: none;
+    }
+
+    video {
+      width: 100%;
+      max-width: 700px;
+      border-radius: 18px;
+      background: #000;
+      display: block;
+      margin: 0 auto 15px;
+    }
+
+    canvas {
+      display: none;
+    }
+
+    #fotoPreview {
+      display: none;
+      width: 100%;
+      max-width: 700px;
+      border-radius: 18px;
+      margin: 0 auto 15px;
+    }
+
+    .controles-camara {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    #mensaje {
+      min-height: 30px;
+      margin: 20px auto;
+      color: #ddd;
+      font-size: 16px;
+    }
+
+    #galeria {
+      margin-top: 25px;
+    }
+
+    .titulo-galeria {
+      font-size: 25px;
+      margin-bottom: 20px;
+    }
+
+    .grid-fotos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+    }
+
+    .foto-card {
+      background: #1d1d1d;
+      border-radius: 14px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .foto-card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .foto-botones {
+      display: flex;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .foto-botones button {
+      flex: 1;
+      padding: 9px 5px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    .estado {
+      color: #999;
+      padding: 30px 10px;
+    }
+
+    #modalQR {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .qr-contenido {
+      background: white;
+      color: #111;
+      padding: 20px;
+      border-radius: 18px;
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .qr-contenido h2 {
+      margin-top: 0;
+    }
+
+    #imagenQR {
+      width: 100%;
+      max-width: 350px;
+      display: block;
+      margin: 15px auto;
+    }
+
+    .cerrar {
+      background: #111;
+      color: white;
+      width: 100%;
+    }
+
+    .oculto {
+      display: none !important;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 23px;
+      }
+
+      button {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .botones {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .grid-fotos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .foto-botones {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
+  <header>
 
-    <!--
-    Poné tu logo como "logo.png"
-    en la misma carpeta que index.html
-    -->
+    <!-- LOGO DEL EVENTO -->
+    <img src="logo.png" alt="Logo del evento">
 
-    <img src="logo.png"
-         alt="Logo"
-         onerror="this.style.display='none'">
+    <h1>📷 FOTOS DEL EVENTO</h1>
 
-    <h1>📸 FOTOS DEL EVENTO</h1>
+    <div class="subtitulo">
+      Compartí y descargá tus fotos
+    </div>
 
-    <p>Compartí y descargá tus fotos</p>
+  </header>
 
-</header>
 
-<div class="menu">
+  <!-- BOTONES PRINCIPALES -->
 
-    <button class="primary"
-            onclick="abrirCamara()">
-        📷 SACAR UNA FOTO
+  <div class="botones">
+
+    <button onclick="abrirCamara()">
+      📷 SACAR UNA FOTO
     </button>
 
     <button onclick="mostrarGaleria()">
-        🖼️ VER FOTOS
+      🖼️ VER FOTOS
     </button>
 
-</div>
+  </div>
 
 
-<section class="camera" id="cameraSection">
+  <main class="contenedor">
 
-    <video id="video"
-           autoplay
-           playsinline
-           style="display:none">
-    </video>
+    <!-- ========================= -->
+    <!-- ZONA DE CÁMARA -->
+    <!-- ========================= -->
 
-    <canvas id="canvas"></canvas>
+    <section id="zonaCamara">
 
-    <img id="preview">
+      <video id="video" autoplay playsinline></video>
 
-    <div class="camera-buttons">
+      <canvas id="canvas"></canvas>
 
-        <button id="activarBtn"
-                class="primary"
-                onclick="iniciarCamara()">
-            📷 ACTIVAR CÁMARA
+      <img id="fotoPreview" alt="Foto tomada">
+
+      <div class="controles-camara">
+
+        <button
+          id="btnActivarCamara"
+          onclick="iniciarCamara()">
+          📷 ACTIVAR CÁMARA
         </button>
 
-        <button id="fotoBtn"
-                class="primary"
-                onclick="sacarFoto()"
-                style="display:none">
-            📸 SACAR FOTO
+        <button
+          id="btnSacarFoto"
+          onclick="sacarFoto()"
+          class="oculto">
+          📸 SACAR FOTO
         </button>
 
-        <button id="guardarBtn"
-                class="primary"
-                onclick="subirFoto()"
-                style="display:none">
-            ☁️ GUARDAR EN GOOGLE DRIVE
+        <button
+          id="btnGuardar"
+          onclick="subirFoto()"
+          class="oculto">
+          ☁️ GUARDAR EN GOOGLE DRIVE
         </button>
 
-        <button id="otraBtn"
-                onclick="nuevaFoto()"
-                style="display:none">
-            🔄 OTRA FOTO
+        <button
+          id="btnNuevaFoto"
+          onclick="nuevaFoto()"
+          class="oculto">
+          🔄 NUEVA FOTO
         </button>
 
-    </div>
+        <button
+          id="btnCerrarCamara"
+          onclick="terminarCamara()"
+          class="oculto">
+          ❌ CERRAR CÁMARA
+        </button>
 
-    <div id="status" class="status"></div>
+      </div>
 
-</section>
+    </section>
 
 
-<section class="gallery"
-         id="gallery">
+    <!-- MENSAJES -->
 
-    <h2>🖼️ GALERÍA</h2>
+    <div id="mensaje"></div>
 
-    <div id="photos"
-         class="photos">
 
-        <div class="empty">
-            Cargando fotos...
+    <!-- ========================= -->
+    <!-- GALERÍA -->
+    <!-- ========================= -->
+
+    <section id="galeria">
+
+      <div class="titulo-galeria">
+        🖼️ GALERÍA
+      </div>
+
+      <div id="listaFotos" class="grid-fotos">
+
+        <div class="estado">
+          Cargando fotos...
         </div>
 
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ========================= -->
+  <!-- MODAL QR -->
+  <!-- ========================= -->
+
+  <div id="modalQR">
+
+    <div class="qr-contenido">
+
+      <h2>📱 Escaneá para ver la foto</h2>
+
+      <img id="imagenQR" alt="Código QR">
+
+      <button
+        class="cerrar"
+        onclick="cerrarQR()">
+        CERRAR
+      </button>
+
     </div>
 
-</section>
+  </div>
 
 
-<!-- MODAL QR -->
+  <script>
 
-<div id="qrModal"
-     class="modal">
+    /* =====================================================
+       CONFIGURACIÓN
+       ===================================================== */
 
-    <div class="modal-box">
-
-        <h2>🔳 Código QR</h2>
-
-        <p>
-            Escaneá este código para abrir
-            la foto.
-        </p>
-
-        <img id="qr">
-
-        <button onclick="cerrarQR()">
-            CERRAR
-        </button>
-
-    </div>
-
-</div>
+    const SCRIPT_URL =
+      "https://script.google.com/macros/s/AKfycbyOKKJUMrNJvU9l4tRIPuaeF4H8k8-czm74NpXlyc9rpSV0T1BqgwRAdcAufHAey0GZSA/exec";
 
 
-<script>
+    /* =====================================================
+       VARIABLES
+       ===================================================== */
 
-/*
-====================================================
-IMPORTANTE
-====================================================
+    let stream = null;
 
-PEGÁ ACÁ LA URL DE TU GOOGLE APPS SCRIPT.
+    let fotoOriginal = null;
 
-Ejemplo:
+    let fotoConLogo = null;
 
-const SCRIPT_URL =
-"https://script.google.com/macros/s/XXXXX/exec";
-
-====================================================
-*/
-
-const SCRIPT_URL =
-https://script.google.com/macros/s/AKfycbyOKKJUMrNJvU9l4tRIPuaeF4H8k8-czm74NpXlyc9rpSV0T1BqgwRAdcAufHAey0GZSA/exec;
+    let contadorJSONP = 0;
 
 
-let stream = null;
-let fotoBase64 = null;
+    /* =====================================================
+       ELEMENTOS
+       ===================================================== */
+
+    const video = document.getElementById("video");
+
+    const canvas = document.getElementById("canvas");
+
+    const fotoPreview = document.getElementById("fotoPreview");
+
+    const zonaCamara = document.getElementById("zonaCamara");
+
+    const mensaje = document.getElementById("mensaje");
+
+    const listaFotos = document.getElementById("listaFotos");
 
 
-/* ==========================================
-   CÁMARA
-========================================== */
+    /* =====================================================
+       MENSAJES
+       ===================================================== */
 
-function abrirCamara() {
+    function mostrarMensaje(texto) {
 
-    document.getElementById("cameraSection")
-        .scrollIntoView({
-            behavior: "smooth"
+      mensaje.textContent = texto;
+
+    }
+
+
+    /* =====================================================
+       ABRIR CÁMARA
+       ===================================================== */
+
+    function abrirCamara() {
+
+      zonaCamara.style.display = "block";
+
+      document.getElementById("galeria").style.display = "none";
+
+      mostrarMensaje("");
+
+      window.scrollTo({
+        top: zonaCamara.offsetTop - 20,
+        behavior: "smooth"
+      });
+
+    }
+
+
+    /* =====================================================
+       INICIAR CÁMARA
+       ===================================================== */
+
+    async function iniciarCamara() {
+
+      try {
+
+        mostrarMensaje("Solicitando acceso a la cámara...");
+
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+
+          throw new Error(
+            "Este navegador no permite acceder a la cámara."
+          );
+
+        }
+
+        stream = await navigator.mediaDevices.getUserMedia({
+
+          video: {
+            facingMode: {
+              ideal: "environment"
+            },
+            width: {
+              ideal: 1920
+            },
+            height: {
+              ideal: 1080
+            }
+          },
+
+          audio: false
+
         });
 
-    iniciarCamara();
-}
-
-
-async function iniciarCamara() {
-
-    try {
-
-        stream =
-            await navigator.mediaDevices
-            .getUserMedia({
-
-                video: {
-                    facingMode: {
-                        ideal: "environment"
-                    }
-                },
-
-                audio: false
-
-            });
-
-
-        const video =
-            document.getElementById("video");
 
         video.srcObject = stream;
 
         video.style.display = "block";
 
-
-        document.getElementById(
-            "activarBtn"
-        ).style.display = "none";
+        fotoPreview.style.display = "none";
 
 
-        document.getElementById(
-            "fotoBtn"
-        ).style.display = "block";
+        document
+          .getElementById("btnActivarCamara")
+          .classList.add("oculto");
 
 
-        document.getElementById(
-            "preview"
-        ).style.display = "none";
+        document
+          .getElementById("btnSacarFoto")
+          .classList.remove("oculto");
 
-    }
 
-    catch(error) {
+        document
+          .getElementById("btnCerrarCamara")
+          .classList.remove("oculto");
 
-        alert(
-            "No se pudo abrir la cámara.\n\n" +
-            "Permití el acceso a la cámara " +
-            "cuando el navegador lo solicite."
+
+        mostrarMensaje(
+          "Cámara activada. ¡Sonreí y sacá la foto! 📸"
         );
+
+      } catch (error) {
 
         console.error(error);
+
+        mostrarMensaje(
+          "No se pudo activar la cámara. " +
+          "Revisá que hayas permitido el acceso a la cámara."
+        );
+
+      }
+
     }
-}
 
 
-/* ==========================================
-   SACAR FOTO
-========================================== */
+    /* =====================================================
+       SACAR FOTO
+       ===================================================== */
 
-function sacarFoto() {
+    async function sacarFoto() {
 
-    const video =
-        document.getElementById("video");
+      if (!stream) {
 
-    const canvas =
-        document.getElementById("canvas");
+        mostrarMensaje(
+          "Primero tenés que activar la cámara."
+        );
 
-    const width =
-        video.videoWidth;
+        return;
 
-    const height =
-        video.videoHeight;
+      }
 
 
-    canvas.width = width;
-    canvas.height = height;
+      try {
+
+        const anchoOriginal = video.videoWidth;
+
+        const altoOriginal = video.videoHeight;
 
 
-    const ctx =
-        canvas.getContext("2d");
+        if (!anchoOriginal || !altoOriginal) {
+
+          mostrarMensaje(
+            "Esperá un momento hasta que la cámara esté lista."
+          );
+
+          return;
+
+        }
 
 
-    /*
-    FOTO ORIGINAL
-    */
+        /* -----------------------------------------------
+           LIMITAR TAMAÑO PARA QUE EL ARCHIVO NO SEA
+           DEMASIADO PESADO
+           ----------------------------------------------- */
 
-    ctx.drawImage(
-        video,
-        0,
-        0,
-        width,
-        height
-    );
+        const maxAncho = 1800;
 
+        let ancho = anchoOriginal;
 
-    /*
-    AGREGAR LOGO
-    */
-
-    const logo =
-        new Image();
+        let alto = altoOriginal;
 
 
-    logo.onload = function() {
+        if (ancho > maxAncho) {
 
-        const logoWidth =
-            width * 0.25;
+          alto =
+            Math.round(alto * maxAncho / ancho);
 
-        const logoHeight =
-            logo.height *
-            (logoWidth / logo.width);
+          ancho = maxAncho;
 
-        const margen =
-            width * 0.03;
+        }
 
 
-        ctx.drawImage(
+        canvas.width = ancho;
 
-            logo,
+        canvas.height = alto;
 
-            width -
-            logoWidth -
-            margen,
 
-            height -
-            logoHeight -
-            margen,
+        const contexto =
+          canvas.getContext("2d");
 
-            logoWidth,
 
-            logoHeight
+        /* -----------------------------------------------
+           FOTO ORIGINAL SIN LOGO
+           ----------------------------------------------- */
 
+        contexto.drawImage(
+          video,
+          0,
+          0,
+          ancho,
+          alto
         );
 
 
-        terminarFoto();
-
-    };
-
-
-    logo.onerror = function() {
-
-        terminarFoto();
-
-    };
-
-
-    logo.src = "logo.png";
-
-}
-
-
-/* ==========================================
-   TERMINAR FOTO
-========================================== */
-
-function terminarFoto() {
-
-    const canvas =
-        document.getElementById("canvas");
-
-
-    fotoBase64 =
-        canvas.toDataURL(
+        fotoOriginal =
+          canvas.toDataURL(
             "image/jpeg",
-            0.90
-        );
+            0.92
+          );
 
 
-    document.getElementById(
-        "preview"
-    ).src = fotoBase64;
+        /* -----------------------------------------------
+           FOTO CON LOGO
+           ----------------------------------------------- */
+
+        const imagenLogo =
+          new Image();
 
 
-    document.getElementById(
-        "preview"
-    ).style.display = "block";
+        imagenLogo.onload = function () {
 
+          try {
 
-    document.getElementById(
-        "video"
-    ).style.display = "none";
+            /* Dibujamos nuevamente la foto */
 
-
-    document.getElementById(
-        "fotoBtn"
-    ).style.display = "none";
-
-
-    document.getElementById(
-        "guardarBtn"
-    ).style.display = "block";
-
-
-    document.getElementById(
-        "otraBtn"
-    ).style.display = "block";
-
-
-    if(stream) {
-
-        stream.getTracks()
-            .forEach(
-                track => track.stop()
+            contexto.drawImage(
+              video,
+              0,
+              0,
+              ancho,
+              alto
             );
 
-        stream = null;
+
+            /* -----------------------------------------
+               TAMAÑO DEL LOGO
+               ----------------------------------------- */
+
+            const margen = 25;
+
+            const anchoLogo =
+              Math.min(
+                ancho * 0.25,
+                350
+              );
+
+
+            const proporcion =
+              imagenLogo.naturalHeight /
+              imagenLogo.naturalWidth;
+
+
+            const altoLogo =
+              anchoLogo * proporcion;
+
+
+            /* -----------------------------------------
+               POSICIÓN:
+               ABAJO A LA DERECHA
+               ----------------------------------------- */
+
+            const x =
+              ancho -
+              anchoLogo -
+              margen;
+
+
+            const y =
+              alto -
+              altoLogo -
+              margen;
+
+
+            contexto.drawImage(
+              imagenLogo,
+              x,
+              y,
+              anchoLogo,
+              altoLogo
+            );
+
+
+            fotoConLogo =
+              canvas.toDataURL(
+                "image/jpeg",
+                0.92
+              );
+
+
+            /* Mostrar la foto con logo */
+
+            fotoPreview.src =
+              fotoConLogo;
+
+            fotoPreview.style.display =
+              "block";
+
+
+            video.style.display =
+              "none";
+
+
+            document
+              .getElementById("btnSacarFoto")
+              .classList.add("oculto");
+
+
+            document
+              .getElementById("btnGuardar")
+              .classList.remove("oculto");
+
+
+            mostrarMensaje(
+              "Foto lista. Podés guardarla en Google Drive."
+            );
+
+          } catch (error) {
+
+            console.error(error);
+
+            mostrarMensaje(
+              "La foto fue tomada pero hubo un problema con el logo."
+            );
+
+          }
+
+        };
+
+
+        imagenLogo.onerror = function () {
+
+          console.warn(
+            "No se pudo cargar logo.png"
+          );
+
+
+          /* Si falla el logo, usamos la foto original */
+
+          fotoConLogo =
+            fotoOriginal;
+
+
+          fotoPreview.src =
+            fotoOriginal;
+
+
+          fotoPreview.style.display =
+            "block";
+
+
+          video.style.display =
+            "none";
+
+
+          document
+            .getElementById("btnSacarFoto")
+            .classList.add("oculto");
+
+
+          document
+            .getElementById("btnGuardar")
+            .classList.remove("oculto");
+
+
+          mostrarMensaje(
+            "Foto lista. No se encontró el logo, por lo que se guardará sin logo."
+          );
+
+        };
+
+
+        imagenLogo.src =
+          "logo.png";
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        mostrarMensaje(
+          "No se pudo tomar la foto."
+        );
+
+      }
+
     }
-}
 
 
-/* ==========================================
-   SUBIR A GOOGLE DRIVE
-========================================== */
+    /* =====================================================
+       GUARDAR EN GOOGLE DRIVE
+       ===================================================== */
 
-async function subirFoto() {
+    async function subirFoto() {
 
-    if (!fotoBase64) {
+      if (!fotoOriginal || !fotoConLogo) {
 
-        alert("Primero sacá una foto.");
-
-        return;
-    }
-
-
-    if (
-        SCRIPT_URL ===
-        "PEGAR_AQUI_LA_URL_DE_APPS_SCRIPT"
-    ) {
-
-        alert(
-            "Todavía no configuraste " +
-            "la URL de Google Apps Script."
+        mostrarMensaje(
+          "Primero tenés que sacar una foto."
         );
 
         return;
-    }
+
+      }
 
 
-    const status =
-        document.getElementById("status");
+      const boton =
+        document.getElementById("btnGuardar");
 
 
-    status.innerText =
-        "☁️ Subiendo foto a Google Drive...";
+      boton.disabled = true;
+
+      boton.textContent =
+        "⏳ GUARDANDO...";
 
 
-    document.getElementById(
-        "guardarBtn"
-    ).disabled = true;
+      mostrarMensaje(
+        "Guardando las fotos en Google Drive..."
+      );
 
 
-    try {
-
-        /*
-        Enviamos la foto sin intentar
-        leer la respuesta del servidor.
-
-        Esto evita el problema de
-        comunicación entre GitHub Pages
-        y Apps Script.
-        */
+      try {
 
         await fetch(
-            SCRIPT_URL,
-            {
-                method: "POST",
+          SCRIPT_URL,
+          {
+            method: "POST",
 
-                mode: "no-cors",
+            mode: "no-cors",
 
-                body: JSON.stringify({
-                    image: fotoBase64
-                })
-            }
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+
+            body: JSON.stringify({
+
+              original: fotoOriginal,
+
+              logo: fotoConLogo
+
+            })
+
+          }
         );
-
-
-        status.innerText =
-            "✅ ¡Foto enviada a Google Drive!";
-
-
-        document.getElementById(
-            "guardarBtn"
-        ).style.display = "none";
-
-
-        fotoBase64 = null;
 
 
         /*
-        Esperamos un poco y actualizamos
-        la galería.
-        */
+         * IMPORTANTE:
+         *
+         * no-cors no permite leer la respuesta
+         * de Google Apps Script desde el navegador.
+         *
+         * Por eso no podemos confirmar desde acá
+         * el resultado exacto del servidor.
+         */
 
-        setTimeout(
-            cargarGaleria,
-            2500
+
+        mostrarMensaje(
+          "✅ Foto enviada. Esperá unos segundos y aparecerá en la galería."
         );
 
 
-    } catch (error) {
+        boton.classList.add("oculto");
+
+
+        document
+          .getElementById("btnNuevaFoto")
+          .classList.remove("oculto");
+
+
+        /*
+         * Esperamos y actualizamos la galería.
+         */
+
+        setTimeout(
+          cargarGaleria,
+          4000
+        );
+
+
+      } catch (error) {
 
         console.error(error);
 
-        status.innerText =
-            "❌ No se pudo guardar la foto.";
-
-        alert(
-            "No se pudo enviar la foto."
+        mostrarMensaje(
+          "❌ No se pudo enviar la foto. Revisá la conexión a Internet."
         );
+
+      }
+
+
+      boton.disabled = false;
+
+      boton.textContent =
+        "☁️ GUARDAR EN GOOGLE DRIVE";
 
     }
 
 
-    document.getElementById(
-        "guardarBtn"
-    ).disabled = false;
-}function cargarGaleria() {
+    /* =====================================================
+       NUEVA FOTO
+       ===================================================== */
 
-    if (
-        SCRIPT_URL ===
-        "PEGAR_AQUI_LA_URL_DE_APPS_SCRIPT"
-    ) {
+    function nuevaFoto() {
 
-        document.getElementById(
-            "photos"
-        ).innerHTML =
-            '<div class="empty">' +
-            'Configurá Google Apps Script.' +
-            '</div>';
+      fotoOriginal = null;
+
+      fotoConLogo = null;
+
+
+      fotoPreview.src = "";
+
+      fotoPreview.style.display =
+        "none";
+
+
+      video.style.display =
+        "block";
+
+
+      document
+        .getElementById("btnNuevaFoto")
+        .classList.add("oculto");
+
+
+      document
+        .getElementById("btnGuardar")
+        .classList.add("oculto");
+
+
+      document
+        .getElementById("btnSacarFoto")
+        .classList.remove("oculto");
+
+
+      mostrarMensaje(
+        "Podés sacar otra foto."
+      );
+
+    }
+
+
+    /* =====================================================
+       TERMINAR CÁMARA
+       ===================================================== */
+
+    function terminarCamara() {
+
+      if (stream) {
+
+        stream
+          .getTracks()
+          .forEach(
+            track => track.stop()
+          );
+
+        stream = null;
+
+      }
+
+
+      video.srcObject = null;
+
+
+      zonaCamara.style.display =
+        "none";
+
+
+      document
+        .getElementById("galeria")
+        .style.display =
+        "block";
+
+
+      document
+        .getElementById("btnActivarCamara")
+        .classList.remove("oculto");
+
+
+      document
+        .getElementById("btnSacarFoto")
+        .classList.add("oculto");
+
+
+      document
+        .getElementById("btnGuardar")
+        .classList.add("oculto");
+
+
+      document
+        .getElementById("btnNuevaFoto")
+        .classList.add("oculto");
+
+
+      document
+        .getElementById("btnCerrarCamara")
+        .classList.add("oculto");
+
+
+      fotoOriginal = null;
+
+      fotoConLogo = null;
+
+    }
+
+
+    /* =====================================================
+       MOSTRAR GALERÍA
+       ===================================================== */
+
+    function mostrarGaleria() {
+
+      document
+        .getElementById("galeria")
+        .style.display =
+        "block";
+
+
+      zonaCamara.style.display =
+        "none";
+
+
+      cargarGaleria();
+
+
+      window.scrollTo({
+        top:
+          document
+            .getElementById("galeria")
+            .offsetTop - 20,
+
+        behavior: "smooth"
+      });
+
+    }
+
+
+    /* =====================================================
+       CARGAR GALERÍA
+       ===================================================== */
+
+    function cargarGaleria() {
+
+      if (!SCRIPT_URL ||
+          SCRIPT_URL.indexOf("/exec") === -1) {
+
+        listaFotos.innerHTML =
+          '<div class="estado">Configuración de Apps Script incorrecta.</div>';
 
         return;
-    }
+
+      }
 
 
-    const callbackName =
+      listaFotos.innerHTML =
+        '<div class="estado">⏳ Cargando fotos...</div>';
+
+
+      contadorJSONP++;
+
+      const callbackName =
         "mostrarFotos_" +
-        Date.now();
+        Date.now() +
+        "_" +
+        contadorJSONP;
 
 
-    window[callbackName] =
-        function(fotos) {
+      /*
+       * Creamos una función global temporal.
+       */
 
-            const container =
-                document.getElementById(
-                    "photos"
-                );
+      window[callbackName] =
+        function (fotos) {
 
+          try {
 
-            container.innerHTML = "";
+            mostrarFotos(fotos);
 
+          } catch (error) {
 
-            if (
-                !fotos ||
-                fotos.length === 0
-            ) {
+            console.error(error);
 
-                container.innerHTML =
-                    '<div class="empty">' +
-                    'Todavía no hay fotos.' +
-                    '</div>';
+            listaFotos.innerHTML =
+              '<div class="estado">No se pudo mostrar la galería.</div>';
 
-                delete window[callbackName];
-
-                return;
-            }
+          }
 
 
-            fotos.forEach(
-                function(foto) {
+          /*
+           * Eliminamos la función temporal.
+           */
 
-                    const card =
-                        document.createElement(
-                            "div"
-                        );
-
-                    card.className =
-                        "photo-card";
-
-
-                    const img =
-                        document.createElement(
-                            "img"
-                        );
-
-                    img.src =
-                        foto.url;
-
-
-                    const descargar =
-                        document.createElement(
-                            "button"
-                        );
-
-                    descargar.innerText =
-                        "⬇️ Descargar";
-
-
-                    descargar.onclick =
-                        function() {
-
-                            window.open(
-                                foto.url,
-                                "_blank"
-                            );
-
-                        };
-
-
-                    const qr =
-                        document.createElement(
-                            "button"
-                        );
-
-                    qr.innerText =
-                        "🔳 Mostrar QR";
-
-
-                    qr.onclick =
-                        function() {
-
-                            mostrarQR(
-                                foto.url
-                            );
-
-                        };
-
-
-                    card.appendChild(img);
-
-                    card.appendChild(
-                        descargar
-                    );
-
-                    card.appendChild(qr);
-
-                    container.appendChild(
-                        card
-                    );
-
-                }
-            );
-
+          try {
 
             delete window[callbackName];
+
+          } catch (e) {}
+
+
         };
 
 
-    const script =
-        document.createElement(
-            "script"
+      const script =
+        document.createElement("script");
+
+
+      script.src =
+        SCRIPT_URL +
+        "?callback=" +
+        encodeURIComponent(
+          callbackName
         );
 
 
-    script.src =
-        SCRIPT_URL +
-        "?callback=" +
-        callbackName;
+      script.onerror =
+        function () {
+
+          console.error(
+            "No se pudo conectar con Google Apps Script."
+          );
 
 
-    script.onerror =
-        function() {
+          listaFotos.innerHTML =
+            '<div class="estado">⚠️ No se pudo conectar con la galería.</div>';
 
-            document.getElementById(
-                "photos"
-            ).innerHTML =
-                '<div class="empty">' +
-                'No se pudieron cargar las fotos.' +
-                '</div>';
+
+          try {
 
             delete window[callbackName];
+
+          } catch (e) {}
 
         };
 
 
-    document.body.appendChild(
-        script
+      document
+        .body
+        .appendChild(script);
+
+
+      /*
+       * Limpiar el script después de unos segundos.
+       */
+
+      setTimeout(
+        function () {
+
+          if (script.parentNode) {
+
+            script.parentNode.removeChild(
+              script
+            );
+
+          }
+
+        },
+        10000
+      );
+
+    }
+
+
+    /* =====================================================
+       MOSTRAR FOTOS
+       ===================================================== */
+
+    function mostrarFotos(fotos) {
+
+      if (!Array.isArray(fotos)) {
+
+        listaFotos.innerHTML =
+          '<div class="estado">No se recibieron fotos.</div>';
+
+        return;
+
+      }
+
+
+      if (fotos.length === 0) {
+
+        listaFotos.innerHTML =
+          '<div class="estado">Todavía no hay fotos.</div>';
+
+        return;
+
+      }
+
+
+      listaFotos.innerHTML = "";
+
+
+      fotos.forEach(
+        function (foto) {
+
+          const tarjeta =
+            document.createElement("div");
+
+
+          tarjeta.className =
+            "foto-card";
+
+
+          const imagen =
+            document.createElement("img");
+
+
+          imagen.src =
+            foto.url;
+
+
+          imagen.alt =
+            foto.nombre ||
+            "Foto del evento";
+
+
+          imagen.loading =
+            "lazy";
+
+
+          imagen.onerror =
+            function () {
+
+              imagen.style.display =
+                "none";
+
+            };
+
+
+          const botones =
+            document.createElement("div");
+
+
+          botones.className =
+            "foto-botones";
+
+
+          /*
+           * BOTÓN DESCARGAR
+           */
+
+          const botonDescargar =
+            document.createElement("button");
+
+
+          botonDescargar.textContent =
+            "⬇️ Descargar";
+
+
+          botonDescargar.onclick =
+            function () {
+
+              window.open(
+                foto.download ||
+                foto.url,
+                "_blank"
+              );
+
+            };
+
+
+          /*
+           * BOTÓN QR
+           */
+
+          const botonQR =
+            document.createElement("button");
+
+
+          botonQR.textContent =
+            "🔳 QR";
+
+
+          botonQR.onclick =
+            function () {
+
+              mostrarQR(
+                foto.url
+              );
+
+            };
+
+
+          botones.appendChild(
+            botonDescargar
+          );
+
+
+          botones.appendChild(
+            botonQR
+          );
+
+
+          tarjeta.appendChild(
+            imagen
+          );
+
+
+          tarjeta.appendChild(
+            botones
+          );
+
+
+          listaFotos.appendChild(
+            tarjeta
+          );
+
+        }
+      );
+
+    }
+
+
+    /* =====================================================
+       MOSTRAR QR
+       ===================================================== */
+
+    function mostrarQR(urlFoto) {
+
+      if (!urlFoto) {
+
+        return;
+
+      }
+
+
+      const urlCodificada =
+        encodeURIComponent(
+          urlFoto
+        );
+
+
+      const qrURL =
+        "https://api.qrserver.com/v1/create-qr-code/" +
+        "?size=500x500" +
+        "&data=" +
+        urlCodificada;
+
+
+      document
+        .getElementById("imagenQR")
+        .src =
+        qrURL;
+
+
+      document
+        .getElementById("modalQR")
+        .style.display =
+        "flex";
+
+    }
+
+
+    /* =====================================================
+       CERRAR QR
+       ===================================================== */
+
+    function cerrarQR() {
+
+      document
+        .getElementById("modalQR")
+        .style.display =
+        "none";
+
+    }
+
+
+    /* =====================================================
+       CERRAR MODAL SI SE TOCA AFUERA
+       ===================================================== */
+
+    document
+      .getElementById("modalQR")
+      .addEventListener(
+        "click",
+        function (event) {
+
+          if (
+            event.target ===
+            document.getElementById("modalQR")
+          ) {
+
+            cerrarQR();
+
+          }
+
+        }
+      );
+
+
+    /* =====================================================
+       CARGAR GALERÍA AL ABRIR LA PÁGINA
+       ===================================================== */
+
+    window.addEventListener(
+      "load",
+      function () {
+
+        cargarGaleria();
+
+      }
     );
 
-}
+
+    /* =====================================================
+       ACTUALIZAR GALERÍA CADA 15 SEGUNDOS
+       ===================================================== */
+
+    setInterval(
+      function () {
+
+        cargarGaleria();
+
+      },
+      15000
+    );
+
+  </script>
+
+</body>
+</html>
