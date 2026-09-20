@@ -6,8 +6,152 @@
 <title>Fotos del Evento</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;text-align:center}header{background:#000;padding:20px 15px 25px}header img{max-width:180px;max-height:120px;display:block;margin:0 auto 15px}h1{margin:0;font-size:28px}.subtitulo{color:#aaa;margin-top:12px}.botones{background:#1c1c1c;padding:20px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}button{border:0;border-radius:12px;padding:15px 22px;font-size:17px;font-weight:bold;cursor:pointer;background:#fff;color:#111}button:disabled{opacity:.5}.contenedor{max-width:1000px;margin:auto;padding:30px 15px}#zonaCamara{display:none}video,#fotoPreview{width:100%;max-width:700px;border-radius:18px;background:#000;display:block;margin:0 auto 15px}canvas{display:none}#fotoPreview{display:none}.controles-camara{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}#mensaje{min-height:30px;margin:20px auto;color:#ddd}.titulo-galeria{font-size:25px;margin-bottom:20px}.grid-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:15px}.foto-card{background:#1d1d1d;border-radius:14px;padding:10px}.foto-card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer}.foto-botones{display:flex;gap:7px;margin-top:9px}.foto-botones button{flex:1;padding:9px;font-size:13px}.estado{color:#999;padding:30px;grid-column:1/-1}.oculto{display:none!important}
-#carrusel{display:none;position:fixed;inset:0;z-index:9990;background:#050505;overflow:hidden}#carruselHeader{height:70px;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #292929}.ctitulo{font-size:22px;font-weight:bold}.cerrar{background:#222;color:#fff;border:1px solid #444;padding:10px 18px;border-radius:24px}.contador{position:absolute;right:25px;top:85px;color:#ddd;font-weight:bold}.principal{height:calc(100% - 70px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px 90px 100px;gap:14px}.fotoWrap{position:relative;max-width:min(1100px,88vw);max-height:calc(100vh - 210px);display:flex;align-items:center}.fotoGrande{max-width:100%;max-height:calc(100vh - 210px);object-fit:contain;border-radius:12px}.flecha{position:absolute;top:50%;transform:translateY(-50%);width:58px;height:58px;border-radius:50%;padding:0;background:#222;color:#fff;border:1px solid #444;font-size:38px;z-index:3}.prev{left:-75px}.next{right:-75px}.qrFoto{position:absolute;right:15px;bottom:15px;width:135px;background:#fff;color:#111;padding:8px;border-radius:11px;box-shadow:0 5px 25px #000}.qrFoto img{width:100%;display:block}.qrFoto div{font-size:11px;font-weight:bold;margin-top:5px}.acciones{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.acciones button{background:#1e1e1e;color:#fff;border:1px solid #444}.miniaturas{position:absolute;bottom:0;left:0;right:0;height:88px;background:#0a0a0a;border-top:1px solid #292929;display:flex;align-items:center;gap:10px;padding:8px 50px;overflow-x:auto}.mini{flex:0 0 90px;width:90px;height:65px;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;background:#222}.mini img{width:100%;height:100%;object-fit:cover}.mini.activa{border-color:#1597ff}
-@media(max-width:700px){h1{font-size:23px}.botones{flex-direction:column;align-items:center}.botones button{width:100%;max-width:320px}.grid-fotos{grid-template-columns:repeat(2,1fr);gap:10px}.foto-botones{flex-direction:column}#carruselHeader{height:60px;padding:8px 12px}.ctitulo{font-size:17px}.principal{height:calc(100% - 60px);padding:10px 8px 88px}.fotoWrap{max-width:100%;max-height:calc(100vh - 190px)}.fotoGrande{max-height:calc(100vh - 190px)}.flecha{width:45px;height:45px;font-size:30px}.prev{left:5px}.next{right:5px}.qrFoto{width:105px;right:7px;bottom:7px;padding:6px}.qrFoto div{font-size:9px}.contador{top:68px;right:12px;font-size:13px}.miniaturas{height:78px;padding:8px 10px}.mini{flex-basis:75px;width:75px;height:55px}.acciones button{padding:11px 14px;font-size:14px}}
+
+#carrusel{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9990;
+  background:#000;
+  overflow:hidden;
+}
+.principal{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.fotoWrap{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  max-width:none;
+  max-height:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.fotoGrande{
+  width:100vw;
+  height:100vh;
+  max-width:none;
+  max-height:none;
+  object-fit:contain;
+  border-radius:0;
+  background:#000;
+  opacity:1;
+  transition:opacity .8s ease-in-out;
+}
+.fotoGrande.fade{
+  opacity:0;
+}
+.qrFoto{
+  position:absolute;
+  top:22px;
+  right:22px;
+  width:145px;
+  background:rgba(255,255,255,.97);
+  color:#111;
+  padding:9px;
+  border-radius:12px;
+  box-shadow:0 5px 25px rgba(0,0,0,.55);
+  z-index:5;
+}
+.qrFoto img{
+  width:100%;
+  display:block;
+  border-radius:5px;
+}
+.qrFoto div{
+  font-size:11px;
+  font-weight:bold;
+  margin-top:5px;
+  line-height:1.2;
+}
+.flecha{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  padding:0;
+  background:rgba(0,0,0,.25);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  font-size:36px;
+  z-index:6;
+  opacity:.15;
+  transition:opacity .2s;
+}
+.flecha:hover{opacity:.8}
+.prev{left:18px}
+.next{right:18px}
+.cerrar{
+  position:absolute;
+  top:18px;
+  left:18px;
+  z-index:10;
+  background:rgba(0,0,0,.3);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  padding:9px 15px;
+  border-radius:22px;
+  opacity:.2;
+  transition:opacity .2s;
+}
+.cerrar:hover{opacity:.85}
+#carruselHeader{
+  position:absolute;
+  inset:0;
+  height:auto;
+  padding:0;
+  border:0;
+  z-index:9;
+  pointer-events:none;
+}
+#carruselHeader .cerrar{pointer-events:auto}
+.ctitulo,.contador,.acciones,.miniaturas{display:none!important}
+
+@media(max-width:700px){
+  .fotoGrande{
+    width:100vw;
+    height:100vh;
+    object-fit:contain;
+  }
+  .qrFoto{
+    width:108px;
+    top:12px;
+    right:12px;
+    padding:6px;
+    border-radius:9px;
+  }
+  .qrFoto div{
+    font-size:9px;
+    margin-top:4px;
+  }
+  .flecha{
+    width:44px;
+    height:44px;
+    font-size:29px;
+    opacity:.12;
+  }
+  .prev{left:7px}
+  .next{right:7px}
+  .cerrar{
+    top:10px;
+    left:10px;
+    padding:7px 11px;
+    font-size:12px;
+    opacity:.18;
+  }
+}
 </style>
 </head>
 <body>
@@ -18,11 +162,11 @@
 <div id="mensaje"></div>
 <section id="galeria"><div class="titulo-galeria">🖼️ GALERÍA</div><div id="listaFotos" class="grid-fotos"><div class="estado">Cargando fotos...</div></div></section>
 </main>
-<section id="carrusel"><div id="carruselHeader"><div class="ctitulo">📷 FOTOS DEL EVENTO</div><button class="cerrar" onclick="cerrarCarrusel()">✕ Cerrar</button></div><div class="contador" id="contador">0 / 0</div><div class="principal"><div class="fotoWrap"><button class="flecha prev" onclick="fotoAnterior()">‹</button><img id="fotoGrande" class="fotoGrande" alt="Foto del evento"><div class="qrFoto"><img id="qrGrande" alt="QR para descargar esta foto"><div>📱 Escaneá para descargar</div></div><button class="flecha next" onclick="fotoSiguiente()">›</button></div><div class="acciones"><button onclick="descargarActual()">⬇️ Descargar</button><button onclick="mostrarQRActual()">🔳 Ver QR</button></div></div><div id="miniaturas" class="miniaturas"></div></section>
+<section id="carrusel"><div id="carruselHeader"><div class="ctitulo"></div><button class="cerrar" onclick="cerrarCarrusel()">✕</button></div><div class="principal"><div class="fotoWrap"><button class="flecha prev" onclick="fotoAnterior()">‹</button><img id="fotoGrande" class="fotoGrande" alt="Foto del evento"><div class="qrFoto"><img id="qrGrande" alt="QR para descargar esta foto"><div>📱 Escaneá para descargar</div></div><button class="flecha next" onclick="fotoSiguiente()">›</button></div></div></section>
 <script>
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbyOKKJUMrNJvU9l4tRIPuaeF4H8k8-czm74NpXlyc9rpSV0T1BqgwRAdcAufHAey0GZSA/exec";
 let stream=null,fotoOriginal=null,fotoConLogo=null,contadorJSONP=0,fotosGaleria=[],indiceActual=0,temporizadorCarrusel=null;
-const INTERVALO_CARRUSEL=5000;
+const INTERVALO_CARRUSEL=6000;
 const video=document.getElementById('video'),canvas=document.getElementById('canvas'),preview=document.getElementById('fotoPreview'),zona=document.getElementById('zonaCamara'),mensaje=document.getElementById('mensaje'),lista=document.getElementById('listaFotos');
 function msg(t){mensaje.textContent=t}
 function abrirCamara(){zona.style.display='block';document.getElementById('galeria').style.display='none';msg('');zona.scrollIntoView({behavior:'smooth'});}
@@ -33,9 +177,10 @@ function nuevaFoto(){fotoOriginal=null;fotoConLogo=null;preview.src='';preview.s
 function terminarCamara(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;zona.style.display='none';document.getElementById('galeria').style.display='block';btnActivarCamara.classList.remove('oculto');btnSacarFoto.classList.add('oculto');btnGuardar.classList.add('oculto');btnNuevaFoto.classList.add('oculto');btnCerrarCamara.classList.add('oculto')}
 function mostrarGaleria(){
   zona.style.display='none';
-  // Intentar pantalla completa mientras el toque del usuario sigue activo.
   const pagina=document.documentElement;
-  if(pagina.requestFullscreen){ pagina.requestFullscreen().catch(()=>{}); }
+  if(pagina.requestFullscreen){
+    pagina.requestFullscreen().catch(()=>{});
+  }
   cargarGaleria(true);
 }
 function cargarGaleria(abrirAlTerminar=false){lista.innerHTML='<div class="estado">⏳ Cargando fotos...</div>';contadorJSONP++;const cb='mostrarFotos_'+Date.now()+'_'+contadorJSONP;window[cb]=f=>{mostrarFotos(f);delete window[cb]; if(abrirAlTerminar && fotosGaleria.length){ abrirCarrusel(0); }};const s=document.createElement('script');s.src=SCRIPT_URL+'?callback='+encodeURIComponent(cb);s.onerror=()=>{lista.innerHTML='<div class="estado">⚠️ No se pudo conectar con la galería.</div>';delete window[cb]};document.body.appendChild(s);setTimeout(()=>s.remove(),10000)}
@@ -45,11 +190,38 @@ function urlVisualizacion(foto){
   }
   return foto && foto.url ? foto.url : '';
 } function mostrarFotos(fotos){if(!Array.isArray(fotos)){lista.innerHTML='<div class="estado">No se recibieron fotos.</div>';return}fotosGaleria=fotos;if(!fotos.length){lista.innerHTML='<div class="estado">Todavía no hay fotos.</div>';return}lista.innerHTML='';fotos.forEach((foto,i)=>{const card=document.createElement('div');card.className='foto-card';const img=document.createElement('img');img.src=urlVisualizacion(foto);img.alt=foto.nombre||'Foto';img.onclick=()=>abrirCarrusel(i);const bs=document.createElement('div');bs.className='foto-botones';const ver=document.createElement('button');ver.textContent='👁️ Ver';ver.onclick=()=>abrirCarrusel(i);const dl=document.createElement('button');dl.textContent='⬇️ Descargar';dl.onclick=()=>window.open(foto.download||foto.url,'_blank');bs.append(ver,dl);card.append(img,bs);lista.append(card)})}
-function abrirCarrusel(i){if(!fotosGaleria.length)return;indiceActual=Math.max(0,Math.min(i,fotosGaleria.length-1));document.getElementById('carrusel').style.display='block';document.body.style.overflow='hidden';actualizarCarrusel();iniciarCarruselAutomatico()}
+function abrirCarrusel(i){
+  if(!fotosGaleria.length)return;
+  indiceActual=Math.max(0,Math.min(i,fotosGaleria.length-1));
+  document.getElementById('carrusel').style.display='block';
+  document.body.style.overflow='hidden';
+  actualizarCarrusel();
+  iniciarCarruselAutomatico();
+}
 function cerrarCarrusel(){document.getElementById('carrusel').style.display='none';document.body.style.overflow='';detenerCarruselAutomatico(); if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});}}
-function actualizarCarrusel(){const f=fotosGaleria[indiceActual];const grande=document.getElementById('fotoGrande');
-    grande.src=urlVisualizacion(f);
-    grande.onerror=function(){ console.error('No se pudo cargar la imagen', f); this.alt='No se pudo cargar esta foto'; }; document.getElementById('contador').textContent=(indiceActual+1)+' / '+fotosGaleria.length;document.getElementById('qrGrande').src='https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='+encodeURIComponent(f.url);const mini=document.getElementById('miniaturas');mini.innerHTML='';fotosGaleria.forEach((x,i)=>{const b=document.createElement('button');b.className='mini'+(i===indiceActual?' activa':'');const im=document.createElement('img');im.src=urlVisualizacion(x);im.alt='Miniatura '+(i+1);b.appendChild(im);b.onclick=()=>{indiceActual=i;actualizarCarrusel()};mini.appendChild(b)});const a=mini.querySelector('.activa');if(a)a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
+function actualizarCarrusel(){
+  const f=fotosGaleria[indiceActual];
+  const grande=document.getElementById('fotoGrande');
+  const nuevaUrl=urlVisualizacion(f);
+
+  grande.classList.add('fade');
+
+  setTimeout(function(){
+    grande.onload=function(){
+      grande.classList.remove('fade');
+    };
+    grande.onerror=function(){
+      console.error('No se pudo cargar la imagen', f);
+      grande.classList.remove('fade');
+      grande.alt='No se pudo cargar esta foto';
+    };
+    grande.src=nuevaUrl;
+  },400);
+
+  document.getElementById('qrGrande').src=
+    'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='+
+    encodeURIComponent(f.url);
+}
 function iniciarCarruselAutomatico(){
   detenerCarruselAutomatico();
   if(fotosGaleria.length>1){
@@ -61,8 +233,8 @@ function iniciarCarruselAutomatico(){
 function detenerCarruselAutomatico(){
   if(temporizadorCarrusel){clearInterval(temporizadorCarrusel);temporizadorCarrusel=null;}
 }
-function fotoSiguiente(){if(fotosGaleria.length){indiceActual=(indiceActual+1)%fotosGaleria.length;actualizarCarrusel()}}
-function fotoAnterior(){if(fotosGaleria.length){indiceActual=(indiceActual-1+fotosGaleria.length)%fotosGaleria.length;actualizarCarrusel()}}
+function fotoSiguiente(){if(fotosGaleria.length){indiceActual=(indiceActual+1)%fotosGaleria.length;actualizarCarrusel();iniciarCarruselAutomatico()}}
+function fotoAnterior(){if(fotosGaleria.length){indiceActual=(indiceActual-1+fotosGaleria.length)%fotosGaleria.length;actualizarCarrusel();iniciarCarruselAutomatico()}}
 function descargarActual(){if(fotosGaleria.length)window.open(fotosGaleria[indiceActual].download||fotosGaleria[indiceActual].url,'_blank')}
 function mostrarQRActual(){document.getElementById('qrGrande').scrollIntoView({behavior:'smooth',block:'center'})}
 document.addEventListener('keydown',e=>{if(document.getElementById('carrusel').style.display!=='block')return;if(e.key==='ArrowRight')fotoSiguiente();if(e.key==='ArrowLeft')fotoAnterior();if(e.key==='Escape')cerrarCarrusel()});window.addEventListener('load',cargarGaleria);setInterval(cargarGaleria,15000);
