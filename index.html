@@ -21,7 +21,8 @@
 <section id="carrusel"><div id="carruselHeader"><div class="ctitulo">📷 FOTOS DEL EVENTO</div><button class="cerrar" onclick="cerrarCarrusel()">✕ Cerrar</button></div><div class="contador" id="contador">0 / 0</div><div class="principal"><div class="fotoWrap"><button class="flecha prev" onclick="fotoAnterior()">‹</button><img id="fotoGrande" class="fotoGrande" alt="Foto del evento"><div class="qrFoto"><img id="qrGrande" alt="QR para descargar esta foto"><div>📱 Escaneá para descargar</div></div><button class="flecha next" onclick="fotoSiguiente()">›</button></div><div class="acciones"><button onclick="descargarActual()">⬇️ Descargar</button><button onclick="mostrarQRActual()">🔳 Ver QR</button></div></div><div id="miniaturas" class="miniaturas"></div></section>
 <script>
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbyOKKJUMrNJvU9l4tRIPuaeF4H8k8-czm74NpXlyc9rpSV0T1BqgwRAdcAufHAey0GZSA/exec";
-let stream=null,fotoOriginal=null,fotoConLogo=null,contadorJSONP=0,fotosGaleria=[],indiceActual=0;
+let stream=null,fotoOriginal=null,fotoConLogo=null,contadorJSONP=0,fotosGaleria=[],indiceActual=0,temporizadorCarrusel=null;
+const INTERVALO_CARRUSEL=5000;
 const video=document.getElementById('video'),canvas=document.getElementById('canvas'),preview=document.getElementById('fotoPreview'),zona=document.getElementById('zonaCamara'),mensaje=document.getElementById('mensaje'),lista=document.getElementById('listaFotos');
 function msg(t){mensaje.textContent=t}
 function abrirCamara(){zona.style.display='block';document.getElementById('galeria').style.display='none';msg('');zona.scrollIntoView({behavior:'smooth'});}
@@ -32,10 +33,28 @@ function nuevaFoto(){fotoOriginal=null;fotoConLogo=null;preview.src='';preview.s
 function terminarCamara(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;zona.style.display='none';document.getElementById('galeria').style.display='block';btnActivarCamara.classList.remove('oculto');btnSacarFoto.classList.add('oculto');btnGuardar.classList.add('oculto');btnNuevaFoto.classList.add('oculto');btnCerrarCamara.classList.add('oculto')}
 function mostrarGaleria(){document.getElementById('galeria').style.display='block';zona.style.display='none';cargarGaleria();document.getElementById('galeria').scrollIntoView({behavior:'smooth'})}
 function cargarGaleria(){lista.innerHTML='<div class="estado">⏳ Cargando fotos...</div>';contadorJSONP++;const cb='mostrarFotos_'+Date.now()+'_'+contadorJSONP;window[cb]=f=>{mostrarFotos(f);delete window[cb]};const s=document.createElement('script');s.src=SCRIPT_URL+'?callback='+encodeURIComponent(cb);s.onerror=()=>{lista.innerHTML='<div class="estado">⚠️ No se pudo conectar con la galería.</div>';delete window[cb]};document.body.appendChild(s);setTimeout(()=>s.remove(),10000)}
-function mostrarFotos(fotos){if(!Array.isArray(fotos)){lista.innerHTML='<div class="estado">No se recibieron fotos.</div>';return}fotosGaleria=fotos;if(!fotos.length){lista.innerHTML='<div class="estado">Todavía no hay fotos.</div>';return}lista.innerHTML='';fotos.forEach((foto,i)=>{const card=document.createElement('div');card.className='foto-card';const img=document.createElement('img');img.src=foto.url;img.alt=foto.nombre||'Foto';img.onclick=()=>abrirCarrusel(i);const bs=document.createElement('div');bs.className='foto-botones';const ver=document.createElement('button');ver.textContent='👁️ Ver';ver.onclick=()=>abrirCarrusel(i);const dl=document.createElement('button');dl.textContent='⬇️ Descargar';dl.onclick=()=>window.open(foto.download||foto.url,'_blank');bs.append(ver,dl);card.append(img,bs);lista.append(card)})}
-function abrirCarrusel(i){if(!fotosGaleria.length)return;indiceActual=Math.max(0,Math.min(i,fotosGaleria.length-1));document.getElementById('carrusel').style.display='block';document.body.style.overflow='hidden';actualizarCarrusel()}
-function cerrarCarrusel(){document.getElementById('carrusel').style.display='none';document.body.style.overflow=''}
-function actualizarCarrusel(){const f=fotosGaleria[indiceActual];document.getElementById('fotoGrande').src=f.url;document.getElementById('contador').textContent=(indiceActual+1)+' / '+fotosGaleria.length;document.getElementById('qrGrande').src='https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='+encodeURIComponent(f.url);const mini=document.getElementById('miniaturas');mini.innerHTML='';fotosGaleria.forEach((x,i)=>{const b=document.createElement('button');b.className='mini'+(i===indiceActual?' activa':'');const im=document.createElement('img');im.src=x.url;im.alt='Miniatura '+(i+1);b.appendChild(im);b.onclick=()=>{indiceActual=i;actualizarCarrusel()};mini.appendChild(b)});const a=mini.querySelector('.activa');if(a)a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
+function urlVisualizacion(foto){
+  if (foto && foto.id) {
+    return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(foto.id) + '&sz=w2000';
+  }
+  return foto && foto.url ? foto.url : '';
+} function mostrarFotos(fotos){if(!Array.isArray(fotos)){lista.innerHTML='<div class="estado">No se recibieron fotos.</div>';return}fotosGaleria=fotos;if(!fotos.length){lista.innerHTML='<div class="estado">Todavía no hay fotos.</div>';return}lista.innerHTML='';fotos.forEach((foto,i)=>{const card=document.createElement('div');card.className='foto-card';const img=document.createElement('img');img.src=urlVisualizacion(foto);img.alt=foto.nombre||'Foto';img.onclick=()=>abrirCarrusel(i);const bs=document.createElement('div');bs.className='foto-botones';const ver=document.createElement('button');ver.textContent='👁️ Ver';ver.onclick=()=>abrirCarrusel(i);const dl=document.createElement('button');dl.textContent='⬇️ Descargar';dl.onclick=()=>window.open(foto.download||foto.url,'_blank');bs.append(ver,dl);card.append(img,bs);lista.append(card)})}
+function abrirCarrusel(i){if(!fotosGaleria.length)return;indiceActual=Math.max(0,Math.min(i,fotosGaleria.length-1));document.getElementById('carrusel').style.display='block';document.body.style.overflow='hidden';actualizarCarrusel();iniciarCarruselAutomatico()}
+function cerrarCarrusel(){document.getElementById('carrusel').style.display='none';document.body.style.overflow='';detenerCarruselAutomatico()}
+function actualizarCarrusel(){const f=fotosGaleria[indiceActual];const grande=document.getElementById('fotoGrande');
+    grande.src=urlVisualizacion(f);
+    grande.onerror=function(){ console.error('No se pudo cargar la imagen', f); this.alt='No se pudo cargar esta foto'; }; document.getElementById('contador').textContent=(indiceActual+1)+' / '+fotosGaleria.length;document.getElementById('qrGrande').src='https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='+encodeURIComponent(f.url);const mini=document.getElementById('miniaturas');mini.innerHTML='';fotosGaleria.forEach((x,i)=>{const b=document.createElement('button');b.className='mini'+(i===indiceActual?' activa':'');const im=document.createElement('img');im.src=urlVisualizacion(x);im.alt='Miniatura '+(i+1);b.appendChild(im);b.onclick=()=>{indiceActual=i;actualizarCarrusel()};mini.appendChild(b)});const a=mini.querySelector('.activa');if(a)a.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
+function iniciarCarruselAutomatico(){
+  detenerCarruselAutomatico();
+  if(fotosGaleria.length>1){
+    temporizadorCarrusel=setInterval(()=>{
+      if(document.getElementById('carrusel').style.display==='block') fotoSiguiente();
+    },INTERVALO_CARRUSEL);
+  }
+}
+function detenerCarruselAutomatico(){
+  if(temporizadorCarrusel){clearInterval(temporizadorCarrusel);temporizadorCarrusel=null;}
+}
 function fotoSiguiente(){if(fotosGaleria.length){indiceActual=(indiceActual+1)%fotosGaleria.length;actualizarCarrusel()}}
 function fotoAnterior(){if(fotosGaleria.length){indiceActual=(indiceActual-1+fotosGaleria.length)%fotosGaleria.length;actualizarCarrusel()}}
 function descargarActual(){if(fotosGaleria.length)window.open(fotosGaleria[indiceActual].download||fotosGaleria[indiceActual].url,'_blank')}
