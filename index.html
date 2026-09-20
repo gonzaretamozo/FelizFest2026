@@ -2,242 +2,378 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Fotos del Evento</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Feliz Fest 2026</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;text-align:center}header{background:#000;padding:20px 15px 25px}header img{max-width:180px;max-height:120px;display:block;margin:0 auto 15px}h1{margin:0;font-size:28px}.subtitulo{color:#aaa;margin-top:12px}.botones{background:#1c1c1c;padding:20px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}button{border:0;border-radius:12px;padding:15px 22px;font-size:17px;font-weight:bold;cursor:pointer;background:#fff;color:#111}button:disabled{opacity:.5}.contenedor{max-width:1000px;margin:auto;padding:30px 15px}#zonaCamara{display:none}video,#fotoPreview{width:100%;max-width:700px;border-radius:18px;background:#000;display:block;margin:0 auto 15px}canvas{display:none}#fotoPreview{display:none}.controles-camara{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}#mensaje{min-height:30px;margin:20px auto;color:#ddd}.titulo-galeria{font-size:25px;margin-bottom:20px}.grid-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:15px}.foto-card{background:#1d1d1d;border-radius:14px;padding:10px}.foto-card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:pointer}.foto-botones{display:flex;gap:7px;margin-top:9px}.foto-botones button{flex:1;padding:9px;font-size:13px}.estado{color:#999;padding:30px;grid-column:1/-1}.oculto{display:none!important}
-
-#carrusel{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:9990;
-  background:#000;
-  overflow:hidden;
-}
-.principal{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  padding:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.fotoWrap{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  max-width:none;
-  max-height:none;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-.fotoGrande{
-  width:100vw;
-  height:100vh;
-  max-width:none;
-  max-height:none;
-  object-fit:contain;
-  border-radius:0;
-  background:#000;
-  opacity:1;
-  transition:opacity .8s ease-in-out;
-}
-.fotoGrande.fade{
-  opacity:0;
-}
-.qrFoto{
-  position:absolute;
-  top:22px;
-  right:22px;
-  width:145px;
-  background:rgba(255,255,255,.97);
-  color:#111;
-  padding:9px;
-  border-radius:12px;
-  box-shadow:0 5px 25px rgba(0,0,0,.55);
-  z-index:5;
-}
-.qrFoto img{
-  width:100%;
-  display:block;
-  border-radius:5px;
-}
-.qrFoto div{
-  font-size:11px;
-  font-weight:bold;
-  margin-top:5px;
-  line-height:1.2;
-}
-.flecha{
-  position:absolute;
-  top:50%;
-  transform:translateY(-50%);
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  padding:0;
-  background:rgba(0,0,0,.25);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.25);
-  font-size:36px;
-  z-index:6;
-  opacity:.15;
-  transition:opacity .2s;
-}
-.flecha:hover{opacity:.8}
-.prev{left:18px}
-.next{right:18px}
-.cerrar{
-  position:absolute;
-  top:18px;
-  left:18px;
-  z-index:10;
-  background:rgba(0,0,0,.3);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.25);
-  padding:9px 15px;
-  border-radius:22px;
-  opacity:.2;
-  transition:opacity .2s;
-}
-.cerrar:hover{opacity:.85}
-#carruselHeader{
-  position:absolute;
-  inset:0;
-  height:auto;
-  padding:0;
-  border:0;
-  z-index:9;
-  pointer-events:none;
-}
-#carruselHeader .cerrar{pointer-events:auto}
-.ctitulo,.contador,.acciones,.miniaturas{display:none!important}
-
-@media(max-width:700px){
-  .fotoGrande{
-    width:100vw;
-    height:100vh;
-    object-fit:contain;
-  }
-  .qrFoto{
-    width:108px;
-    top:12px;
-    right:12px;
-    padding:6px;
-    border-radius:9px;
-  }
-  .qrFoto div{
-    font-size:9px;
-    margin-top:4px;
-  }
-  .flecha{
-    width:44px;
-    height:44px;
-    font-size:29px;
-    opacity:.12;
-  }
-  .prev{left:7px}
-  .next{right:7px}
-  .cerrar{
-    top:10px;
-    left:10px;
-    padding:7px 11px;
-    font-size:12px;
-    opacity:.18;
-  }
-}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:Arial,sans-serif;background:#111;color:#fff}
+body{overflow:hidden}
+button{font:inherit}
+#inicio,#camara{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#inicio{gap:18px;padding:24px}
+#inicio img{max-width:220px;max-height:180px;object-fit:contain;margin-bottom:20px}
+.btn{border:0;border-radius:16px;padding:18px 28px;width:min(330px,88vw);font-size:20px;font-weight:700;cursor:pointer}
+.btn-primary{background:#fff;color:#111}
+.btn-secondary{background:#333;color:#fff;border:1px solid #666}
+#camara{display:none;position:relative;background:#000}
+#video{width:100%;height:100%;object-fit:cover}
+.camera-controls{position:absolute;left:0;right:0;bottom:0;padding:18px;display:flex;justify-content:center;background:linear-gradient(transparent,rgba(0,0,0,.75))}
+.control{border:0;border-radius:999px;padding:13px 18px;background:rgba(255,255,255,.92);color:#111;font-weight:700;cursor:pointer}
+#capture{width:76px;height:76px;border-radius:50%;padding:0;border:6px solid #fff;background:#ddd}
+#volver{position:absolute;top:18px;left:18px;z-index:5}
+#cambioCamara{position:absolute;top:18px;right:18px;z-index:5}
+#mensaje{position:absolute;left:50%;bottom:115px;transform:translateX(-50%);background:rgba(0,0,0,.75);padding:12px 18px;border-radius:12px;display:none;text-align:center;z-index:10;white-space:nowrap}
+#galeria{display:none;position:fixed;inset:0;background:#000;z-index:20}
+#fotoActual{width:100%;height:100%;object-fit:contain;opacity:1;transition:opacity .8s ease}
+#qr{position:absolute;top:18px;right:18px;width:92px;height:92px;background:#fff;padding:5px;border-radius:8px}
+#cerrarGaleria{position:absolute;top:18px;left:18px;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:50%;width:42px;height:42px;cursor:pointer;font-size:22px}
+#contador{position:absolute;top:24px;left:72px;background:rgba(0,0,0,.45);padding:7px 11px;border-radius:10px;font-size:14px}
+.flecha{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.25);border:0;color:#fff;font-size:38px;width:52px;height:70px;cursor:pointer;opacity:.55}
+#prev{left:8px}#next{right:8px}
+#sinFotos{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:30;padding:20px}
+.modal{background:#fff;color:#111;border-radius:18px;padding:26px;width:min(380px,92vw);text-align:center}
+.modal h2{margin-top:0}
+.modal input{width:100%;padding:14px;border:1px solid #bbb;border-radius:10px;font-size:18px;margin:10px 0 14px}
+.modal .btn{width:100%;margin-top:8px}
+#errorClave{color:#c00;display:none;margin:5px 0 10px}
 </style>
 </head>
 <body>
-<header><img src="logo.png" alt="Logo del evento"><h1>📷 FOTOS DEL EVENTO</h1><div class="subtitulo">Compartí y descargá tus fotos</div></header>
-<div class="botones"><button onclick="abrirCamara()">📷 SACAR UNA FOTO</button><button onclick="mostrarGaleria()">🖼️ VER FOTOS</button></div>
-<main class="contenedor">
-<section id="zonaCamara"><video id="video" autoplay playsinline></video><canvas id="canvas"></canvas><img id="fotoPreview"><div class="controles-camara"><button id="btnActivarCamara" onclick="iniciarCamara()">📷 ACTIVAR CÁMARA</button><button id="btnSacarFoto" onclick="sacarFoto()" class="oculto">📸 SACAR FOTO</button><button id="btnGuardar" onclick="subirFoto()" class="oculto">☁️ GUARDAR EN GOOGLE DRIVE</button><button id="btnNuevaFoto" onclick="nuevaFoto()" class="oculto">🔄 NUEVA FOTO</button><button id="btnCerrarCamara" onclick="terminarCamara()" class="oculto">❌ CERRAR CÁMARA</button></div></section>
-<div id="mensaje"></div>
-<section id="galeria"><div class="titulo-galeria">🖼️ GALERÍA</div><div id="listaFotos" class="grid-fotos"><div class="estado">Cargando fotos...</div></div></section>
-</main>
-<section id="carrusel"><div id="carruselHeader"><div class="ctitulo"></div><button class="cerrar" onclick="cerrarCarrusel()">✕</button></div><div class="principal"><div class="fotoWrap"><button class="flecha prev" onclick="fotoAnterior()">‹</button><img id="fotoGrande" class="fotoGrande" alt="Foto del evento"><div class="qrFoto"><img id="qrGrande" alt="QR para descargar esta foto"><div>📱 Escaneá para descargar</div></div><button class="flecha next" onclick="fotoSiguiente()">›</button></div></div></section>
+
+<section id="inicio">
+  <img src="logo.png" alt="Logo del evento" onerror="this.style.display='none'">
+  <button class="btn btn-primary" id="sacarFoto">📸 SACAR FOTO</button>
+  <button class="btn btn-secondary" id="verFotos">🖼️ VER FOTOS</button>
+</section>
+
+<section id="camara">
+  <video id="video" autoplay playsinline muted></video>
+  <button class="control" id="volver">← Volver</button>
+  <button class="control" id="cambioCamara">🔄 Cámara frontal</button>
+  <div id="mensaje"></div>
+  <div class="camera-controls">
+    <button id="capture" aria-label="Sacar foto"></button>
+  </div>
+</section>
+
+<div class="modal-bg" id="modalClave">
+  <div class="modal">
+    <h2>Galería privada</h2>
+    <p>Ingresá la contraseña para ver las fotos.</p>
+    <input id="clave" type="password" autocomplete="off" placeholder="Contraseña">
+    <div id="errorClave">Contraseña incorrecta</div>
+    <button class="btn btn-primary" id="ingresar">INGRESAR</button>
+    <button class="btn btn-secondary" id="cancelarClave">CANCELAR</button>
+  </div>
+</div>
+
+<section id="galeria">
+  <div id="sinFotos">Cargando fotos…</div>
+  <img id="fotoActual" alt="Foto del evento">
+  <img id="qr" alt="QR de la foto">
+  <div id="contador"></div>
+  <button id="cerrarGaleria">×</button>
+  <button class="flecha" id="prev">‹</button>
+  <button class="flecha" id="next">›</button>
+</section>
+
 <script>
-const SCRIPT_URL="https://script.google.com/macros/s/AKfycbyOKKJUMrNJvU9l4tRIPuaeF4H8k8-czm74NpXlyc9rpSV0T1BqgwRAdcAufHAey0GZSA/exec";
-let stream=null,fotoOriginal=null,fotoConLogo=null,contadorJSONP=0,fotosGaleria=[],indiceActual=0,temporizadorCarrusel=null;
-const INTERVALO_CARRUSEL=6000;
-const video=document.getElementById('video'),canvas=document.getElementById('canvas'),preview=document.getElementById('fotoPreview'),zona=document.getElementById('zonaCamara'),mensaje=document.getElementById('mensaje'),lista=document.getElementById('listaFotos');
-function msg(t){mensaje.textContent=t}
-function abrirCamara(){zona.style.display='block';document.getElementById('galeria').style.display='none';msg('');zona.scrollIntoView({behavior:'smooth'});}
-async function iniciarCamara(){try{msg('Solicitando acceso a la cámara...');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}},audio:false});video.srcObject=stream;video.style.display='block';preview.style.display='none';btnActivarCamara.classList.add('oculto');btnSacarFoto.classList.remove('oculto');btnCerrarCamara.classList.remove('oculto');msg('Cámara activada. ¡Sonreí y sacá la foto! 📸')}catch(e){console.error(e);msg('No se pudo activar la cámara. Revisá los permisos.')}}
-async function sacarFoto(){if(!stream)return msg('Primero tenés que activar la cámara.');const w0=video.videoWidth,h0=video.videoHeight;if(!w0||!h0)return msg('Esperá un momento hasta que la cámara esté lista.');let w=w0,h=h0;canvas.width=w;canvas.height=h;const c=canvas.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(video,0,0,w,h);fotoOriginal=canvas.toDataURL('image/jpeg',.98);const logo=new Image();logo.onload=()=>{c.drawImage(video,0,0,w,h);const m=25,lw=Math.min(w*.25,350),lh=lw*logo.naturalHeight/logo.naturalWidth;c.drawImage(logo,w-lw-m,h-lh-m,lw,lh);fotoConLogo=canvas.toDataURL('image/jpeg',.98);preview.src=fotoConLogo;preview.style.display='block';video.style.display='none';btnSacarFoto.classList.add('oculto');btnGuardar.classList.remove('oculto');msg('Foto lista. Podés guardarla en Google Drive.')};logo.onerror=()=>{fotoConLogo=fotoOriginal;preview.src=fotoOriginal;preview.style.display='block';video.style.display='none';btnSacarFoto.classList.add('oculto');btnGuardar.classList.remove('oculto');msg('Foto lista. No se encontró el logo, se guardará sin logo.')};logo.src='logo.png'}
-async function subirFoto(){if(!fotoOriginal||!fotoConLogo)return msg('Primero tenés que sacar una foto.');btnGuardar.disabled=true;btnGuardar.textContent='⏳ GUARDANDO...';msg('Guardando las fotos en Google Drive...');try{await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({original:fotoOriginal,logo:fotoConLogo})});msg('✅ Foto enviada. Esperá unos segundos y aparecerá en la galería.');btnGuardar.classList.add('oculto');btnNuevaFoto.classList.remove('oculto');setTimeout(cargarGaleria,4000)}catch(e){console.error(e);msg('❌ No se pudo enviar la foto.')}btnGuardar.disabled=false;btnGuardar.textContent='☁️ GUARDAR EN GOOGLE DRIVE'}
-function nuevaFoto(){fotoOriginal=null;fotoConLogo=null;preview.src='';preview.style.display='none';video.style.display='block';btnNuevaFoto.classList.add('oculto');btnGuardar.classList.add('oculto');btnSacarFoto.classList.remove('oculto');msg('Podés sacar otra foto.')}
-function terminarCamara(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;zona.style.display='none';document.getElementById('galeria').style.display='block';btnActivarCamara.classList.remove('oculto');btnSacarFoto.classList.add('oculto');btnGuardar.classList.add('oculto');btnNuevaFoto.classList.add('oculto');btnCerrarCamara.classList.add('oculto')}
-function mostrarGaleria(){
-  zona.style.display='none';
-  const pagina=document.documentElement;
-  if(pagina.requestFullscreen){
-    pagina.requestFullscreen().catch(()=>{});
-  }
-  cargarGaleria(true);
-}
-function cargarGaleria(abrirAlTerminar=false){lista.innerHTML='<div class="estado">⏳ Cargando fotos...</div>';contadorJSONP++;const cb='mostrarFotos_'+Date.now()+'_'+contadorJSONP;window[cb]=f=>{mostrarFotos(f);delete window[cb]; if(abrirAlTerminar && fotosGaleria.length){ abrirCarrusel(0); }};const s=document.createElement('script');s.src=SCRIPT_URL+'?callback='+encodeURIComponent(cb);s.onerror=()=>{lista.innerHTML='<div class="estado">⚠️ No se pudo conectar con la galería.</div>';delete window[cb]};document.body.appendChild(s);setTimeout(()=>s.remove(),10000)}
-function urlVisualizacion(foto){
-  if (foto && foto.id) {
-    return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(foto.id) + '&sz=w2000';
-  }
-  return foto && foto.url ? foto.url : '';
-} function mostrarFotos(fotos){if(!Array.isArray(fotos)){lista.innerHTML='<div class="estado">No se recibieron fotos.</div>';return}fotosGaleria=fotos;if(!fotos.length){lista.innerHTML='<div class="estado">Todavía no hay fotos.</div>';return}lista.innerHTML='';fotos.forEach((foto,i)=>{const card=document.createElement('div');card.className='foto-card';const img=document.createElement('img');img.src=urlVisualizacion(foto);img.alt=foto.nombre||'Foto';img.onclick=()=>abrirCarrusel(i);const bs=document.createElement('div');bs.className='foto-botones';const ver=document.createElement('button');ver.textContent='👁️ Ver';ver.onclick=()=>abrirCarrusel(i);const dl=document.createElement('button');dl.textContent='⬇️ Descargar';dl.onclick=()=>window.open(foto.download||foto.url,'_blank');bs.append(ver,dl);card.append(img,bs);lista.append(card)})}
-function abrirCarrusel(i){
-  if(!fotosGaleria.length)return;
-  indiceActual=Math.max(0,Math.min(i,fotosGaleria.length-1));
-  document.getElementById('carrusel').style.display='block';
-  document.body.style.overflow='hidden';
-  actualizarCarrusel();
-  iniciarCarruselAutomatico();
-}
-function cerrarCarrusel(){document.getElementById('carrusel').style.display='none';document.body.style.overflow='';detenerCarruselAutomatico(); if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});}}
-function actualizarCarrusel(){
-  const f=fotosGaleria[indiceActual];
-  const grande=document.getElementById('fotoGrande');
-  const nuevaUrl=urlVisualizacion(f);
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOKKJUMrNJvU9l4tRIPuaeF4H8k8-czm74NpXlyc9rpSV0T1BqgwRAdcAufHAey0GZSA/exec";
+const PASSWORD = "disfrutalareunion";
+const JPEG_QUALITY = 0.98;
 
-  grande.classList.add('fade');
+const inicio = document.getElementById("inicio");
+const camara = document.getElementById("camara");
+const video = document.getElementById("video");
+const capture = document.getElementById("capture");
+const mensaje = document.getElementById("mensaje");
+const cambioCamara = document.getElementById("cambioCamara");
+const modalClave = document.getElementById("modalClave");
+const clave = document.getElementById("clave");
+const galeria = document.getElementById("galeria");
+const fotoActual = document.getElementById("fotoActual");
+const qr = document.getElementById("qr");
+const contador = document.getElementById("contador");
 
-  setTimeout(function(){
-    grande.onload=function(){
-      grande.classList.remove('fade');
+let stream = null;
+let facingMode = "environment";
+let fotos = [];
+let indice = 0;
+let timer = null;
+let logoImage = null;
+
+function mostrarMensaje(texto, tiempo=2200){
+  mensaje.textContent = texto;
+  mensaje.style.display = "block";
+  clearTimeout(mostrarMensaje.t);
+  mostrarMensaje.t = setTimeout(()=>mensaje.style.display="none", tiempo);
+}
+
+async function iniciarCamara(){
+  try{
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:{ideal:facingMode},
+        width:{ideal:3840},
+        height:{ideal:2160}
+      },
+      audio:false
+    });
+
+    video.srcObject = stream;
+    await video.play();
+
+    cambioCamara.textContent = facingMode === "environment"
+      ? "🔄 Cámara frontal"
+      : "🔄 Cámara trasera";
+
+  }catch(e){
+    mostrarMensaje("No se pudo acceder a la cámara.",3500);
+  }
+}
+
+document.getElementById("sacarFoto").onclick = async ()=>{
+  inicio.style.display="none";
+  camara.style.display="flex";
+  await iniciarCamara();
+};
+
+document.getElementById("volver").onclick = ()=>{
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  camara.style.display="none";
+  inicio.style.display="flex";
+};
+
+cambioCamara.onclick = async ()=>{
+  facingMode = facingMode === "environment" ? "user" : "environment";
+  await iniciarCamara();
+};
+
+function cargarLogo(){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload=()=>{logoImage=img;resolve(img)};
+    img.onerror=()=>resolve(null);
+    img.src="logo.png";
+  });
+}
+
+capture.onclick = async ()=>{
+  if(!video.videoWidth || !video.videoHeight) return;
+
+  const canvas=document.createElement("canvas");
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+
+  const ctx=canvas.getContext("2d",{alpha:false});
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+  const fotoOriginal=canvas.toDataURL("image/jpeg",JPEG_QUALITY);
+
+  if(!logoImage) await cargarLogo();
+
+  if(logoImage){
+    const escala=Math.min(
+      canvas.width*0.24/logoImage.naturalWidth,
+      canvas.height*0.24/logoImage.naturalHeight,
+      1
+    );
+
+    const w=logoImage.naturalWidth*escala;
+    const h=logoImage.naturalHeight*escala;
+    const margen=Math.round(Math.min(canvas.width,canvas.height)*0.025);
+
+    ctx.drawImage(
+      logoImage,
+      canvas.width-w-margen,
+      canvas.height-h-margen,
+      w,
+      h
+    );
+  }
+
+  const fotoConLogo=canvas.toDataURL("image/jpeg",JPEG_QUALITY);
+
+  mostrarMensaje("Guardando foto…",3000);
+
+  try{
+    await fetch(SCRIPT_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({
+        original:fotoOriginal,
+        logo:fotoConLogo
+      })
+    });
+
+    mostrarMensaje("¡Foto guardada!",2200);
+
+  }catch(e){
+    mostrarMensaje("No se pudo guardar la foto.",3000);
+  }
+};
+
+document.getElementById("verFotos").onclick=()=>{
+  modalClave.style.display="flex";
+  clave.value="";
+  document.getElementById("errorClave").style.display="none";
+  setTimeout(()=>clave.focus(),100);
+};
+
+document.getElementById("cancelarClave").onclick=()=>{
+  modalClave.style.display="none";
+};
+
+document.getElementById("ingresar").onclick=validarClave;
+
+clave.addEventListener("keydown",e=>{
+  if(e.key==="Enter") validarClave();
+});
+
+function validarClave(){
+  if(clave.value===PASSWORD){
+    modalClave.style.display="none";
+    abrirGaleria();
+  }else{
+    document.getElementById("errorClave").style.display="block";
+    clave.select();
+  }
+}
+
+async function abrirGaleria(){
+  galeria.style.display="block";
+  document.getElementById("sinFotos").style.display="flex";
+  fotoActual.style.display="none";
+  await cargarFotos();
+}
+
+function cargarFotos(){
+  return new Promise(resolve=>{
+
+    const callbackName="fotos_"+Date.now();
+
+    window[callbackName]=function(data){
+
+      fotos=Array.isArray(data)?data:[];
+      indice=0;
+
+      document.getElementById("sinFotos").style.display=
+        fotos.length ? "none" : "flex";
+
+      fotoActual.style.display=
+        fotos.length ? "block" : "none";
+
+      if(fotos.length) mostrarFoto(true);
+
+      cleanup();
+      resolve();
     };
-    grande.onerror=function(){
-      console.error('No se pudo cargar la imagen', f);
-      grande.classList.remove('fade');
-      grande.alt='No se pudo cargar esta foto';
-    };
-    grande.src=nuevaUrl;
-  },400);
 
-  document.getElementById('qrGrande').src=
-    'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='+
-    encodeURIComponent(f.url);
+    const script=document.createElement("script");
+
+    script.src=
+      SCRIPT_URL+
+      "?callback="+
+      encodeURIComponent(callbackName);
+
+    script.onerror=()=>{
+      document.getElementById("sinFotos").textContent=
+        "No se pudieron cargar las fotos.";
+      cleanup();
+      resolve();
+    };
+
+    document.body.appendChild(script);
+
+    function cleanup(){
+      delete window[callbackName];
+      script.remove();
+    }
+  });
 }
-function iniciarCarruselAutomatico(){
-  detenerCarruselAutomatico();
-  if(fotosGaleria.length>1){
-    temporizadorCarrusel=setInterval(()=>{
-      if(document.getElementById('carrusel').style.display==='block') fotoSiguiente();
-    },INTERVALO_CARRUSEL);
+
+function mostrarFoto(inmediata=false){
+
+  if(!fotos.length)return;
+
+  const foto=fotos[indice];
+
+  if(!inmediata){
+
+    fotoActual.style.opacity="0";
+
+    setTimeout(()=>{
+
+      fotoActual.src=foto.url;
+
+      qr.src=
+        "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+
+        encodeURIComponent(foto.url);
+
+      contador.textContent=(indice+1)+" / "+fotos.length;
+
+      requestAnimationFrame(()=>{
+        fotoActual.style.opacity="1";
+      });
+
+    },400);
+
+  }else{
+
+    fotoActual.src=foto.url;
+
+    qr.src=
+      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+
+      encodeURIComponent(foto.url);
+
+    contador.textContent=(indice+1)+" / "+fotos.length;
+    fotoActual.style.opacity="1";
+  }
+
+  reiniciarTimer();
+}
+
+function siguiente(){
+  if(!fotos.length)return;
+  indice=(indice+1)%fotos.length;
+  mostrarFoto();
+}
+
+function anterior(){
+  if(!fotos.length)return;
+  indice=(indice-1+fotos.length)%fotos.length;
+  mostrarFoto();
+}
+
+function reiniciarTimer(){
+  clearInterval(timer);
+  if(fotos.length>1){
+    timer=setInterval(siguiente,6000);
   }
 }
-function detenerCarruselAutomatico(){
-  if(temporizadorCarrusel){clearInterval(temporizadorCarrusel);temporizadorCarrusel=null;}
-}
-function fotoSiguiente(){if(fotosGaleria.length){indiceActual=(indiceActual+1)%fotosGaleria.length;actualizarCarrusel();iniciarCarruselAutomatico()}}
-function fotoAnterior(){if(fotosGaleria.length){indiceActual=(indiceActual-1+fotosGaleria.length)%fotosGaleria.length;actualizarCarrusel();iniciarCarruselAutomatico()}}
-function descargarActual(){if(fotosGaleria.length)window.open(fotosGaleria[indiceActual].download||fotosGaleria[indiceActual].url,'_blank')}
-function mostrarQRActual(){document.getElementById('qrGrande').scrollIntoView({behavior:'smooth',block:'center'})}
-document.addEventListener('keydown',e=>{if(document.getElementById('carrusel').style.display!=='block')return;if(e.key==='ArrowRight')fotoSiguiente();if(e.key==='ArrowLeft')fotoAnterior();if(e.key==='Escape')cerrarCarrusel()});window.addEventListener('load',cargarGaleria);setInterval(cargarGaleria,15000);
+
+document.getElementById("next").onclick=siguiente;
+document.getElementById("prev").onclick=anterior;
+
+document.getElementById("cerrarGaleria").onclick=()=>{
+  clearInterval(timer);
+  galeria.style.display="none";
+};
+
+document.addEventListener("keydown",e=>{
+  if(galeria.style.display==="block"){
+    if(e.key==="ArrowRight")siguiente();
+    if(e.key==="ArrowLeft")anterior();
+    if(e.key==="Escape"){
+      document.getElementById("cerrarGaleria").click();
+    }
+  }
+});
 </script>
+
 </body>
 </html>
