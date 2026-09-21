@@ -393,30 +393,71 @@ function iniciarActualizacionGaleria(){
   },3000);
 }
 
-function urlImagen(foto){
-  // Thumbnail de Google Drive: suele ser más fiable para mostrar imágenes
-  // que uc?export=view, especialmente en móviles.
+function urlsImagen(foto){
+  const urls=[];
+
   if(foto.id){
-    return "https://drive.google.com/thumbnail?id="+encodeURIComponent(foto.id)+"&sz=w2400";
+    // Google Drive recomienda la URL de thumbnail para mostrar imágenes
+    // en páginas externas. Probamos primero una resolución grande.
+    urls.push(
+      "https://drive.google.com/thumbnail?id="+encodeURIComponent(foto.id)+"&sz=s4000"
+    );
+
+    // Segundo intento por si el thumbnail anterior no responde en el navegador.
+    urls.push(
+      "https://lh3.googleusercontent.com/d/"+encodeURIComponent(foto.id)+"=w2400"
+    );
   }
-  return foto.url;
+
+  if(foto.url) urls.push(foto.url);
+
+  return urls;
 }
 
 function mostrarFoto(inmediata=false){
   if(!fotos.length)return;
 
   const foto=fotos[indice];
-  const nuevaUrl=urlImagen(foto);
+  const urls=urlsImagen(foto);
+
+  const cargarConFallback=(pos=0)=>{
+    if(!urls.length){
+      fotoActual.style.display="none";
+      document.getElementById("sinFotos").style.display="flex";
+      document.getElementById("sinFotos").textContent="No se pudo mostrar esta foto.";
+      return;
+    }
+
+    const url=urls[pos];
+    const prueba=new Image();
+
+    prueba.onload=()=>{
+      fotoActual.src=url;
+      fotoActual.style.display="block";
+      document.getElementById("sinFotos").style.display="none";
+      contador.textContent=(indice+1)+" / "+fotos.length;
+      fotoActual.style.opacity="1";
+    };
+
+    prueba.onerror=()=>{
+      if(pos+1<urls.length){
+        cargarConFallback(pos+1);
+      }else{
+        fotoActual.style.display="none";
+        document.getElementById("sinFotos").style.display="flex";
+        document.getElementById("sinFotos").textContent="No se pudo mostrar esta foto.";
+      }
+    };
+
+    prueba.src=url;
+  };
 
   const cambiar=()=>{
-    fotoActual.src=nuevaUrl;
+    cargarConFallback(0);
 
     qr.src=
       "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+
-      encodeURIComponent(foto.url || nuevaUrl);
-
-    contador.textContent=(indice+1)+" / "+fotos.length;
-    fotoActual.style.opacity="1";
+      encodeURIComponent(foto.url || urls[0] || "");
   };
 
   if(inmediata){
