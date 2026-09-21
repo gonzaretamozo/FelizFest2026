@@ -310,14 +310,35 @@ async function abrirGaleria(){
 
 function cargarFotos(mantenerFoto=true){
   return new Promise(resolve=>{
-    const callbackName="fotos_"+Date.now()+"_"+Math.random().toString(36).slice(2);
     const idActual = mantenerFoto && fotos[indice] ? fotos[indice].id : null;
+    const requestId="req_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+    const iframe=document.createElement("iframe");
 
-    window[callbackName]=function(data){
-      const nuevasFotos=Array.isArray(data)?data:[];
+    iframe.style.display="none";
+    iframe.setAttribute("aria-hidden","true");
+
+    let terminado=false;
+
+    const limpiar=()=>{
+      if(terminado)return;
+      terminado=true;
+      window.removeEventListener("message",recibir);
+      clearTimeout(temporizador);
+      iframe.remove();
+      resolve();
+    };
+
+    const recibir=(event)=>{
+      const data=event.data;
+
+      if(!data || data.type!=="FELIZFEST_FOTOS" || data.requestId!==requestId){
+        return;
+      }
+
+      const nuevasFotos=Array.isArray(data.fotos)?data.fotos:[];
       const idsNuevos=nuevasFotos.map(f=>f.id).join(",");
       const idsActuales=fotos.map(f=>f.id).join(",");
-      const cambio = idsNuevos !== idsActuales;
+      const cambio=idsNuevos!==idsActuales;
 
       if(cambio){
         fotos=nuevasFotos;
@@ -338,8 +359,6 @@ function cargarFotos(mantenerFoto=true){
           document.getElementById("sinFotos").style.display="none";
           fotoActual.style.display="block";
 
-          // Solo cambia la foto si es la primera carga o si la foto actual
-          // dejó de existir. Las fotos nuevas quedan incorporadas al carrusel.
           if(!idActual || !fotos.some(f=>f.id===idActual)){
             mostrarFoto(true);
           }else{
@@ -351,33 +370,23 @@ function cargarFotos(mantenerFoto=true){
           fotoActual.style.display="none";
         }
       }else if(fotos.length){
-        // Actualiza solamente el contador, sin reiniciar el temporizador.
         contador.textContent=(indice+1)+" / "+fotos.length;
       }
 
       limpiar();
-      resolve();
     };
 
-    const script=document.createElement("script");
-    script.src=SCRIPT_URL+
-      "?callback="+encodeURIComponent(callbackName)+
-      "&t="+Date.now();
+    window.addEventListener("message",recibir);
 
-    script.onerror=()=>{
+    const temporizador=setTimeout(()=>{
       if(!fotos.length){
         document.getElementById("sinFotos").textContent="No se pudieron cargar las fotos.";
       }
       limpiar();
-      resolve();
-    };
+    },10000);
 
-    document.body.appendChild(script);
-
-    function limpiar(){
-      delete window[callbackName];
-      script.remove();
-    }
+    iframe.src=SCRIPT_URL+"?modo=galeria&requestId="+encodeURIComponent(requestId)+"&t="+Date.now();
+    document.body.appendChild(iframe);
   });
 }
 
