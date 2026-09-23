@@ -38,9 +38,14 @@ button{font:inherit}
 #qr{position:absolute;top:18px;right:18px;width:92px;height:92px;background:#fff;padding:5px;border-radius:8px}
 #cerrarGaleria{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.10);color:rgba(255,255,255,.48);border:0;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:19px;opacity:.18;transition:opacity .25s}
 #cerrarGaleria:hover,#cerrarGaleria:active{opacity:.65}
-#girarGaleria{position:absolute;top:14px;left:58px;background:rgba(35,35,35,.10);color:rgba(45,45,45,.65);border:0;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:19px;opacity:.55;transition:opacity .25s,background .25s;z-index:5}#girarGaleria:hover,#girarGaleria:active{opacity:.65;background:rgba(35,35,35,.25)}
-#galeria.rotada{transform:rotate(90deg);transform-origin:center center;width:100vh;height:100vw;top:50%;left:50%;right:auto;bottom:auto;transform:translate(-50%,-50%) rotate(90deg)}
-#galeria.rotada #girarGaleria{transform:rotate(-90deg)}
+#girarGaleria{position:absolute;bottom:14px;left:58px;top:auto;background:rgba(35,35,35,.10);color:rgba(45,45,45,.65);border:0;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:19px;opacity:.55;transition:opacity .25s,background .25s;z-index:5}
+#girarGaleria:hover,#girarGaleria:active{opacity:.65;background:rgba(35,35,35,.25)}
+#galeria.rotada90{transform:translate(-50%,-50%) rotate(90deg);transform-origin:center center;width:100vh;height:100vw;top:50%;left:50%;right:auto;bottom:auto}
+#galeria.rotada180{transform:translate(-50%,-50%) rotate(180deg);transform-origin:center center;width:100vw;height:100vh;top:50%;left:50%;right:auto;bottom:auto}
+#galeria.rotada270{transform:translate(-50%,-50%) rotate(270deg);transform-origin:center center;width:100vh;height:100vw;top:50%;left:50%;right:auto;bottom:auto}
+#galeria.rotada90 #girarGaleria{transform:rotate(-90deg)}
+#galeria.rotada180 #girarGaleria{transform:rotate(-180deg)}
+#galeria.rotada270 #girarGaleria{transform:rotate(-270deg)}
 #contador{position:absolute;top:13px;left:43px;background:rgba(35,35,35,.10);padding:3px 5px;border-radius:5px;font-size:10px;color:rgba(45,45,45,.4);opacity:.35}
 .flecha{position:absolute;top:50%;transform:translateY(-50%);background:rgba(35,35,35,.16);border:0;color:rgba(45,45,45,.38);font-size:18px;width:24px;height:34px;padding:0;line-height:34px;cursor:pointer;opacity:.18;transition:opacity .25s,background .25s}
 .flecha:hover,.flecha:active{opacity:.5;background:rgba(35,35,35,.3)}
@@ -131,7 +136,7 @@ let refreshTimer = null;
 let logoImage = null;
 let fotoOriginalPendiente = null;
 let fotoLogoPendiente = null;
-let galeriaRotada = false;
+let galeriaRotada = 0;
 
 function mostrarMensaje(texto, tiempo=2200){
   mensaje.textContent = texto;
@@ -504,8 +509,11 @@ function reiniciarTimer(){
 
 
 girarGaleria.onclick=()=>{
-  galeriaRotada=!galeriaRotada;
-  galeria.classList.toggle("rotada",galeriaRotada);
+  galeriaRotada=(galeriaRotada+90)%360;
+  galeria.classList.remove("rotada90","rotada180","rotada270");
+  if(galeriaRotada===90) galeria.classList.add("rotada90");
+  if(galeriaRotada===180) galeria.classList.add("rotada180");
+  if(galeriaRotada===270) galeria.classList.add("rotada270");
 };
 
 document.getElementById("next").onclick=siguiente;
@@ -515,8 +523,8 @@ document.getElementById("cerrarGaleria").onclick=()=>{
   clearInterval(timer);
   clearInterval(refreshTimer);
   galeria.style.display="none";
-  galeriaRotada=false;
-  galeria.classList.remove("rotada");
+  galeriaRotada=0;
+  galeria.classList.remove("rotada90","rotada180","rotada270");
 };
 
 document.addEventListener("keydown",e=>{
