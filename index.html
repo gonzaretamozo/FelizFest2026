@@ -25,6 +25,13 @@ button{font:inherit}
 #capture{width:76px;height:76px;border-radius:50%;padding:0;border:6px solid #fff;background:#ddd}
 #volver{position:absolute;top:18px;left:18px;z-index:5}
 #cambioCamara{position:absolute;top:18px;right:18px;z-index:5}
+#panelCamara{position:absolute;left:12px;right:12px;bottom:112px;z-index:6;margin:auto;width:min(520px,calc(100% - 24px));padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.68);backdrop-filter:blur(8px);display:grid;grid-template-columns:1fr 1fr;gap:9px 14px}
+#panelCamara label{font-size:12px;color:#eee;display:flex;flex-direction:column;gap:5px}
+#panelCamara select{width:100%;padding:8px;border:1px solid #777;border-radius:8px;background:#222;color:#fff;font-size:13px}
+#panelCamara input[type=range]{width:100%;accent-color:#fff}
+#panelCamara .ancho{grid-column:1/-1}
+#estadoCamara{font-size:11px;color:#ccc;grid-column:1/-1;text-align:center}
+@media(max-height:620px){#panelCamara{bottom:95px;padding:7px 10px;gap:5px 10px}#panelCamara label{font-size:10px}}
 
 #mensaje{position:absolute;left:50%;bottom:115px;transform:translateX(-50%);background:rgba(0,0,0,.75);padding:12px 18px;border-radius:12px;display:none;text-align:center;z-index:10;white-space:nowrap}
 
@@ -72,6 +79,21 @@ button{font:inherit}
   <video id="video" autoplay playsinline muted></video>
   <button class="control" id="volver">← Volver</button>
   <button class="control" id="cambioCamara">🔄 Cámara frontal</button>
+  <div id="panelCamara">
+    <label class="ancho">Cámara / lente
+      <select id="selectorCamara"><option value="">Detectando cámaras…</option></select>
+    </label>
+    <label>Zoom <span id="valorZoom">1x</span>
+      <input id="controlZoom" type="range" min="1" max="1" step="0.1" value="1" disabled>
+    </label>
+    <label>Modo de enfoque
+      <select id="modoEnfoque"><option value="auto">Automático</option></select>
+    </label>
+    <label class="ancho" id="grupoEnfoqueManual" style="display:none">Enfoque manual <span id="valorEnfoque">—</span>
+      <input id="controlEnfoque" type="range" min="0" max="1" step="0.01" value="0.5">
+    </label>
+    <div id="estadoCamara">Se habilitan los controles que admite este celular.</div>
+  </div>
   <div id="mensaje"></div>
   <div class="camera-controls">
     <button id="capture" aria-label="Sacar foto"></button>
@@ -119,6 +141,14 @@ const video = document.getElementById("video");
 const capture = document.getElementById("capture");
 const mensaje = document.getElementById("mensaje");
 const cambioCamara = document.getElementById("cambioCamara");
+const selectorCamara = document.getElementById("selectorCamara");
+const controlZoom = document.getElementById("controlZoom");
+const valorZoom = document.getElementById("valorZoom");
+const modoEnfoque = document.getElementById("modoEnfoque");
+const grupoEnfoqueManual = document.getElementById("grupoEnfoqueManual");
+const controlEnfoque = document.getElementById("controlEnfoque");
+const valorEnfoque = document.getElementById("valorEnfoque");
+const estadoCamara = document.getElementById("estadoCamara");
 const preview = document.getElementById("preview");
 const previewImg = document.getElementById("previewImg");
 const galeria = document.getElementById("galeria");
@@ -129,6 +159,9 @@ const girarGaleria = document.getElementById("girarGaleria");
 
 let stream = null;
 let facingMode = "environment";
+let selectedDeviceId = "";
+let capacidadesCamara = {};
+let modosEnfoqueDisponibles = [];
 let fotos = [];
 let indice = 0;
 let timer = null;
@@ -145,42 +178,131 @@ function mostrarMensaje(texto, tiempo=2200){
   mostrarMensaje.t = setTimeout(()=>mensaje.style.display="none", tiempo);
 }
 
+async function listarCamaras(){
+  try{
+    const dispositivos=await navigator.mediaDevices.enumerateDevices();
+    const camaras=dispositivos.filter(d=>d.kind==="videoinput");
+    const actual=selectedDeviceId;
+    selectorCamara.innerHTML="";
+    camaras.forEach((camara,i)=>{
+      const opcion=document.createElement("option");
+      opcion.value=camara.deviceId;
+      opcion.textContent=camara.label || `Cámara ${i+1}`;
+      selectorCamara.appendChild(opcion);
+    });
+    if(actual && camaras.some(c=>c.deviceId===actual)) selectorCamara.value=actual;
+    else if(camaras.length) selectorCamara.value=camaras[0].deviceId;
+    selectorCamara.disabled=camaras.length<2;
+    if(!camaras.length) selectorCamara.innerHTML='<option value="">No se detectaron cámaras</option>';
+  }catch(e){
+    selectorCamara.innerHTML='<option value="">Selección no disponible</option>';
+  }
+}
+
+async function configurarControlesCamara(pista){
+  capacidadesCamara={};
+  modosEnfoqueDisponibles=[];
+  const ajustes=pista.getCapabilities ? pista.getCapabilities() : {};
+  capacidadesCamara=ajustes;
+  estadoCamara.textContent="Controles disponibles según el celular y el navegador.";
+
+  // Zoom óptico/digital expuesto por el navegador.
+  if(ajustes.zoom){
+    controlZoom.min=ajustes.zoom.min;
+    controlZoom.max=ajustes.zoom.max;
+    controlZoom.step=ajustes.zoom.step || 0.1;
+    const actual=pista.getSettings ? pista.getSettings().zoom : ajustes.zoom.min;
+    controlZoom.value=actual || ajustes.zoom.min;
+    controlZoom.disabled=false;
+    actualizarTextoZoom();
+  }else{
+    controlZoom.min=1;controlZoom.max=1;controlZoom.value=1;controlZoom.disabled=true;
+    valorZoom.textContent="No disponible";
+  }
+
+  modoEnfoque.innerHTML="";
+  modoEnfoque.disabled=false;
+  if(ajustes.focusMode && ajustes.focusMode.length){
+    modosEnfoqueDisponibles=ajustes.focusMode;
+    const nombres={continuous:"Automático continuo","single-shot":"Automático al capturar",manual:"Manual"};
+    ajustes.focusMode.forEach(modo=>{
+      const op=document.createElement("option");op.value=modo;op.textContent=nombres[modo] || modo;modoEnfoque.appendChild(op);
+    });
+    const preferido=ajustes.focusMode.includes("continuous")?"continuous":ajustes.focusMode[0];
+    modoEnfoque.value=preferido;
+    await aplicarModoEnfoque(preferido);
+  }else{
+    const op=document.createElement("option");op.value="auto";op.textContent="Automático del dispositivo";modoEnfoque.appendChild(op);
+    modoEnfoque.disabled=true;
+    estadoCamara.textContent="El navegador no expone controles manuales de enfoque para esta cámara.";
+  }
+  const tieneManual=ajustes.focusMode?.includes("manual") && ajustes.focusDistance;
+  grupoEnfoqueManual.style.display=tieneManual?"flex":"none";
+  if(tieneManual){
+    controlEnfoque.min=ajustes.focusDistance.min;
+    controlEnfoque.max=ajustes.focusDistance.max;
+    controlEnfoque.step=ajustes.focusDistance.step || 0.01;
+    controlEnfoque.value=(ajustes.focusDistance.min+ajustes.focusDistance.max)/2;
+    actualizarTextoEnfoque();
+  }
+}
+
+function actualizarTextoZoom(){valorZoom.textContent=`${Number(controlZoom.value).toFixed(1)}x`;}
+function actualizarTextoEnfoque(){valorEnfoque.textContent=Number(controlEnfoque.value).toFixed(2);}
+
+async function aplicarModoEnfoque(modo){
+  const pista=stream?.getVideoTracks()[0];if(!pista)return;
+  try{
+    if(modo!=="auto") await pista.applyConstraints({advanced:[{focusMode:modo}]});
+    grupoEnfoqueManual.style.display=(modo==="manual" && capacidadesCamara.focusDistance)?"flex":"none";
+    if(modo==="manual" && capacidadesCamara.focusDistance){
+      await pista.applyConstraints({advanced:[{focusDistance:Number(controlEnfoque.value)}]});
+    }
+  }catch(e){console.log("Este dispositivo no admite ese modo de enfoque",e);}
+}
+
 async function iniciarCamara(){
   try{
     if(stream) stream.getTracks().forEach(t=>t.stop());
-
-    stream = await navigator.mediaDevices.getUserMedia({
-      video:{
-        facingMode:{ideal:facingMode},
-        width:{ideal:3840},
-        height:{ideal:2160}
-      },
-      audio:false
-    });
-
-    video.srcObject = stream;
-    video.classList.toggle("selfie", facingMode === "user");
+    const videoConstraint={width:{ideal:3840},height:{ideal:2160}};
+    if(selectedDeviceId) videoConstraint.deviceId={exact:selectedDeviceId};
+    else videoConstraint.facingMode={ideal:facingMode};
+    stream=await navigator.mediaDevices.getUserMedia({video:videoConstraint,audio:false});
+    video.srcObject=stream;
+    const pista=stream.getVideoTracks()[0];
+    const settings=pista.getSettings ? pista.getSettings() : {};
+    if(settings.facingMode) facingMode=settings.facingMode;
+    video.classList.toggle("selfie",facingMode==="user");
     await video.play();
-
-    // Solicita enfoque automático continuo cuando el navegador lo permite.
-    const pista = stream.getVideoTracks()[0];
-    try{
-      const capacidades = pista.getCapabilities ? pista.getCapabilities() : {};
-      if(capacidades.focusMode && capacidades.focusMode.includes("continuous")){
-        await pista.applyConstraints({advanced:[{focusMode:"continuous"}]});
-      }
-    }catch(errorEnfoque){
-      console.log("No se pudo configurar el enfoque desde el navegador.", errorEnfoque);
-    }
-
-    cambioCamara.textContent = facingMode === "environment"
-      ? "🔄 Cámara frontal"
-      : "🔄 Cámara trasera";
-
+    await listarCamaras();
+    if(settings.deviceId){selectedDeviceId=settings.deviceId;selectorCamara.value=settings.deviceId;}
+    await configurarControlesCamara(pista);
+    cambioCamara.textContent=facingMode==="environment"?"🔄 Cámara frontal":"🔄 Cámara trasera";
   }catch(e){
+    console.error("No se pudo iniciar la cámara",e);
     mostrarMensaje("No se pudo acceder a la cámara.",3500);
   }
 }
+
+selectorCamara.onchange=async()=>{
+  selectedDeviceId=selectorCamara.value;
+  const opcion=selectorCamara.options[selectorCamara.selectedIndex]?.textContent.toLowerCase() || "";
+  facingMode=(opcion.includes("front")||opcion.includes("frontal")||opcion.includes("user"))?"user":"environment";
+  await iniciarCamara();
+};
+
+controlZoom.oninput=async()=>{
+  actualizarTextoZoom();
+  const pista=stream?.getVideoTracks()[0];if(!pista)return;
+  try{await pista.applyConstraints({advanced:[{zoom:Number(controlZoom.value)}]});}catch(e){console.log("Zoom no disponible",e);}
+};
+
+modoEnfoque.onchange=()=>aplicarModoEnfoque(modoEnfoque.value);
+controlEnfoque.oninput=async()=>{
+  actualizarTextoEnfoque();
+  const pista=stream?.getVideoTracks()[0];if(!pista)return;
+  try{await pista.applyConstraints({advanced:[{focusMode:"manual"},{focusDistance:Number(controlEnfoque.value)}]});}catch(e){console.log("Enfoque manual no disponible",e);}
+};
 
 document.getElementById("sacarFoto").onclick = async ()=>{
   inicio.style.display="none";
@@ -196,6 +318,7 @@ document.getElementById("volver").onclick = ()=>{
 
 cambioCamara.onclick = async ()=>{
   facingMode = facingMode === "environment" ? "user" : "environment";
+  selectedDeviceId = "";
   await iniciarCamara();
 };
 
