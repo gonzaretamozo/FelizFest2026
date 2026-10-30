@@ -162,6 +162,17 @@ async function iniciarCamara(){
     video.classList.toggle("selfie", facingMode === "user");
     await video.play();
 
+    // Solicita enfoque automático continuo cuando el navegador lo permite.
+    const pista = stream.getVideoTracks()[0];
+    try{
+      const capacidades = pista.getCapabilities ? pista.getCapabilities() : {};
+      if(capacidades.focusMode && capacidades.focusMode.includes("continuous")){
+        await pista.applyConstraints({advanced:[{focusMode:"continuous"}]});
+      }
+    }catch(errorEnfoque){
+      console.log("No se pudo configurar el enfoque desde el navegador.", errorEnfoque);
+    }
+
     cambioCamara.textContent = facingMode === "environment"
       ? "🔄 Cámara frontal"
       : "🔄 Cámara trasera";
@@ -197,47 +208,78 @@ function cargarLogo(){
   });
 }
 
+// Convierte el archivo original de la cámara a Data URL para enviarlo a Drive.
+function blobADataURL(blob){
+  return new Promise((resolve,reject)=>{
+    const lector=new FileReader();
+    lector.onload=()=>resolve(lector.result);
+    lector.onerror=()=>reject(lector.error);
+    lector.readAsDataURL(blob);
+  });
+}
+
 capture.onclick = async ()=>{
   if(!video.videoWidth || !video.videoHeight) return;
+  capture.disabled=true;
+  mostrarMensaje("Tomando fotografía…",3000);
 
-  const canvas=document.createElement("canvas");
-  canvas.width=video.videoWidth;
-  canvas.height=video.videoHeight;
+  let imagenCapturada=null;
+  try{
+    const pista=stream && stream.getVideoTracks()[0];
 
-  const ctx=canvas.getContext("2d",{alpha:false});
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    // En navegadores compatibles, toma una fotografía fija directamente del sensor.
+    if(pista && "ImageCapture" in window){
+      try{
+        const capturador=new ImageCapture(pista);
+        const archivoFoto=await capturador.takePhoto();
+        fotoOriginalPendiente=await blobADataURL(archivoFoto);
+        imagenCapturada=await createImageBitmap(archivoFoto);
+      }catch(errorCapturaNativa){
+        console.log("Captura fija no disponible; se usará la vista previa.",errorCapturaNativa);
+      }
+    }
 
-  fotoOriginalPendiente=canvas.toDataURL("image/jpeg",JPEG_QUALITY);
+    // Alternativa compatible con celulares/navegadores sin ImageCapture.
+    if(!imagenCapturada){
+      const respaldo=document.createElement("canvas");
+      respaldo.width=video.videoWidth;
+      respaldo.height=video.videoHeight;
+      respaldo.getContext("2d",{alpha:false}).drawImage(video,0,0,respaldo.width,respaldo.height);
+      fotoOriginalPendiente=respaldo.toDataURL("image/jpeg",JPEG_QUALITY);
+      imagenCapturada=await createImageBitmap(respaldo);
+    }
 
-  if(!logoImage) await cargarLogo();
+    const canvas=document.createElement("canvas");
+    canvas.width=imagenCapturada.width;
+    canvas.height=imagenCapturada.height;
+    const ctx=canvas.getContext("2d",{alpha:false});
+    ctx.drawImage(imagenCapturada,0,0,canvas.width,canvas.height);
+    if(imagenCapturada.close) imagenCapturada.close();
 
-  if(logoImage){
-    const escala=Math.min(
-      canvas.width*0.1944/logoImage.naturalWidth,
-      canvas.height*0.1944/logoImage.naturalHeight,
-      1
-    );
+    if(!logoImage) await cargarLogo();
+    if(logoImage){
+      const escala=Math.min(
+        canvas.width*0.1944/logoImage.naturalWidth,
+        canvas.height*0.1944/logoImage.naturalHeight,
+        1
+      );
+      const w=logoImage.naturalWidth*escala;
+      const h=logoImage.naturalHeight*escala;
+      const margen=Math.round(Math.min(canvas.width,canvas.height)*0.025);
+      ctx.drawImage(logoImage,canvas.width-w-margen,canvas.height-h-margen,w,h);
+    }
 
-    const w=logoImage.naturalWidth*escala;
-    const h=logoImage.naturalHeight*escala;
-    const margen=Math.round(Math.min(canvas.width,canvas.height)*0.025);
-
-    ctx.drawImage(
-      logoImage,
-      canvas.width-w-margen,
-      canvas.height-h-margen,
-      w,
-      h
-    );
+    fotoLogoPendiente=canvas.toDataURL("image/jpeg",JPEG_QUALITY);
+    previewImg.src=fotoLogoPendiente;
+    camara.style.display="none";
+    preview.style.display="flex";
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+  }catch(error){
+    console.error("Error al procesar la fotografía:",error);
+    mostrarMensaje("No se pudo procesar la foto. Intentá nuevamente.",3500);
+  }finally{
+    capture.disabled=false;
   }
-
-  fotoLogoPendiente=canvas.toDataURL("image/jpeg",JPEG_QUALITY);
-
-  previewImg.src=fotoLogoPendiente;
-  camara.style.display="none";
-  preview.style.display="flex";
-
-  if(stream) stream.getTracks().forEach(t=>t.stop());
 };
 
 document.getElementById("descartar").onclick=()=>{
